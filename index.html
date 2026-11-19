@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four Speculative Victoria Parks</title>
+<meta name="description" content="1 park, 4 futures: an interactive map of four speculative futures for Victoria Park, London. Design Methods project, London Interdisciplinary School.">
+<meta property="og:title" content="1 park, 4 futures: Victoria Park">
+<meta property="og:description" content="Explore four speculative futures for Victoria Park on an interactive map.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f3af56">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: slide-style title and four illustrated nature cards on orange, then one large rounded map "board" with a cream key panel. */
+  --orange: #f3af56;
+  --orange-deep: #e4933a;
+  --cream: #fdf2d0;
+  --cream-2: #f7e6b8;
+  --green: #48752c;
+  --ink: #2c4a1b;
+  --muted: #5d6b45;
+  --wellbeing: #48752c;
+  --fourth: #b4532a;
+  --restoration: #1f7a78;
+  --forager: #8a6a12;
+  --turnstile: #d8452f;
+  --font-display: "Titan One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --font-body: "Nunito", "Trebuchet MS", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--orange); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5; font-weight: 600; }
+.wrap { max-width: 1400px; margin: 0 auto; padding: 0 28px; }
+@media (max-width: 480px) { .wrap { padding: 0 16px; } }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 400; margin: 0; color: var(--green); text-wrap: balance; letter-spacing: .005em; }
+p { margin: 0; }
+
+/* Header */
+header { padding: 40px 0 6px; }
+.head { display: grid; justify-items: center; text-align: center; gap: 14px; }
+h1 { font-size: clamp(2.6rem, 6.4vw, 5.2rem); line-height: .98; }
+.lede { font-size: 1.08rem; max-width: 56ch; color: var(--ink); }
+.lede strong { font-family: var(--font-display); font-weight: 400; color: var(--green); }
+
+/* Four natures */
+.natures { padding-top: 30px; padding-bottom: 44px; }
+.collage { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+.nat { background: var(--cream); border: 2.5px solid var(--ink); border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 6px 6px 0 var(--ink); }
+.nat img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block; border-bottom: 2.5px solid var(--ink); }
+.nat .card { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.nat h3 { font-size: 1.3rem; line-height: 1.1; }
+.nat .num { font-family: var(--font-body); font-weight: 800; text-transform: uppercase; color: var(--orange-deep); font-size: .72rem; letter-spacing: .08em; }
+.nat p { font-size: .92rem; color: var(--muted); }
+a.nat { color: inherit; text-decoration: none; transition: transform .12s ease, box-shadow .12s ease; }
+a.nat:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+a.nat:focus-visible { outline: 3px solid var(--cream); outline-offset: 3px; }
+.nat .go { margin-top: auto; padding-top: 4px; font-weight: 800; font-size: .85rem; color: var(--green); }
+@media (prefers-reduced-motion: reduce) { a.nat { transition: none; } a.nat:hover { transform: none; } }
+
+/* Map board */
+.board-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin: 6px 0 14px; }
+.board-head h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
+.board-head p { color: var(--ink); max-width: 52ch; }
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 340px; height: clamp(560px, 80vh, 940px); border: 3px solid var(--ink); border-radius: 30px; overflow: hidden; background: var(--cream); box-shadow: 8px 8px 0 var(--ink); }
+.stage { position: relative; overflow: hidden; background: #f8dfae; touch-action: none; cursor: grab; }
+.stage.dragging { cursor: grabbing; }
+.stage:focus-visible { outline: 4px solid var(--green); outline-offset: -4px; }
+svg#map { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-select: none; }
+
+.cartouche { position: absolute; top: 14px; left: 14px; background: var(--cream); border: 2.5px solid var(--ink); border-radius: 22px; padding: 10px 18px 11px 16px; box-shadow: 5px 5px 0 var(--c, var(--green)); max-width: min(360px, calc(100% - 90px)); pointer-events: none; }
+.cartouche .t1 { font-family: var(--font-display); font-size: 1.45rem; line-height: 1.05; color: var(--c); }
+.cartouche .t2 { font-size: .8rem; color: var(--muted); font-weight: 800; margin-top: 2px; }
+.zoombar { position: absolute; top: 14px; right: 14px; display: flex; flex-direction: column; background: var(--cream); border: 2.5px solid var(--ink); border-radius: 16px; overflow: hidden; box-shadow: 3px 3px 0 var(--ink); }
+.zoombar button { width: 42px; height: 40px; border: 0; background: var(--cream); font: 400 1.3rem/1 var(--font-display); color: var(--green); cursor: pointer; }
+.zoombar button + button { border-top: 2px solid var(--ink); }
+.zoombar button:hover { background: var(--cream-2); }
+.zoombar button:focus-visible { outline: 3px solid var(--green); outline-offset: -3px; }
+.zoombar .reset { font-size: .72rem; letter-spacing: .04em; }
+.scale { position: absolute; right: 14px; bottom: 14px; display: flex; align-items: flex-end; gap: 10px; pointer-events: none; }
+.scalebar { background: var(--cream); border: 2px solid var(--ink); border-radius: 12px; padding: 4px 9px 6px; font-size: .74rem; font-weight: 800; color: var(--ink); }
+.scalebar .bar { height: 6px; border: 2.5px solid var(--ink); border-top: 0; margin-top: 2px; }
+.compass { width: 48px; height: 48px; }
+
+/* Scenario switcher */
+.layers { position: absolute; left: 14px; bottom: 14px; display: flex; align-items: flex-end; gap: 8px; }
+.layer-btn { width: 80px; padding: 0; border: 2.5px solid var(--ink); border-radius: 16px; background: var(--cream); box-shadow: 3px 3px 0 var(--ink); cursor: pointer; overflow: hidden; display: flex; flex-direction: column; font: 800 .68rem/1.15 var(--font-body); color: var(--ink); text-align: center; }
+.layer-btn svg { display: block; width: 100%; height: 54px; }
+.layer-btn span { padding: 4px 3px 6px; display: block; }
+.layer-btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.layer-btn:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.layer-btn[aria-pressed="true"] { background: var(--c); color: var(--cream); }
+.layer-tray { display: flex; gap: 8px; background: var(--cream-2); border: 2.5px solid var(--ink); padding: 8px; border-radius: 20px; }
+.layer-tray[hidden] { display: none; }
+.layer-main { position: relative; }
+.layer-main .lbl-layers { position: absolute; top: 5px; left: 5px; background: var(--ink); color: var(--cream); font-size: .58rem; font-weight: 800; padding: 1px 6px; border-radius: 6px; letter-spacing: .05em; text-transform: uppercase; }
+
+/* Pop-up */
+.pop { position: absolute; z-index: 20; width: 286px; background: var(--cream); border: 2.5px solid var(--ink); border-radius: 22px; padding: 14px 16px 14px; box-shadow: 6px 6px 0 var(--c, var(--ink)); font-size: .87rem; line-height: 1.45; pointer-events: auto; display: none; cursor: auto; }
+.pop.show { display: block; }
+.pop .cat { display: inline-block; font-size: .66rem; letter-spacing: .07em; text-transform: uppercase; font-weight: 800; color: #fff; background: var(--c); padding: 3px 9px; border-radius: 999px; }
+.pop h4 { font-size: 1.2rem; margin: 8px 0 5px; line-height: 1.1; color: var(--ink); }
+.pop p { color: var(--muted); }
+.pop p + p { margin-top: 6px; }
+.pop a { color: var(--green); font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
+.pop a:hover { text-decoration-thickness: 2px; }
+.pop a:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; border-radius: 2px; }
+.pop .src { color: var(--muted); font-weight: 800; text-decoration: underline dotted; }
+.pop .x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 2px solid var(--ink); border-radius: 50%; background: var(--cream-2); cursor: pointer; font: 800 .8rem/1 var(--font-body); color: var(--ink); display: none; }
+.pop.pinned .x { display: block; }
+.pop .x:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+/* Key panel */
+.panel { border-left: 3px solid var(--ink); display: flex; flex-direction: column; min-height: 0; background: var(--cream); }
+.panel-head { padding: 18px 20px 14px; border-bottom: 2px dashed rgba(44,74,27,.35); }
+.panel-head .tag { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; color: var(--c); }
+.panel-head h2 { font-size: 1.6rem; line-height: 1.05; margin-top: 4px; color: var(--c); }
+.panel-head p { color: var(--muted); font-size: .88rem; margin-top: 8px; }
+.panel-body { overflow-y: auto; padding: 8px 10px 18px; flex: 1; min-height: 0; }
+.group { padding: 10px 8px 4px; }
+.group-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--font-display); font-size: 1.02rem; color: var(--green); margin-bottom: 4px; }
+.group-h label { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-body); font-size: .74rem; font-weight: 800; color: var(--muted); cursor: pointer; }
+.group-h input { accent-color: var(--green); width: 16px; height: 16px; }
+.items { list-style: none; margin: 0; padding: 0; }
+.items button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 0; background: none; border-radius: 12px; text-align: left; font: 700 .9rem/1.25 var(--font-body); color: var(--ink); cursor: pointer; }
+.items button:hover, .items button.hl { background: var(--cream-2); }
+.items button:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.items .meta { margin-left: auto; color: var(--muted); font-weight: 700; font-size: .78rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip { width: 24px; height: 24px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 800 .7rem/1 var(--font-body); background: var(--k); border: 2px solid var(--ink); font-variant-numeric: tabular-nums; }
+.chip.sq { border-radius: 7px; }
+.chip.line { border-radius: 4px; height: 8px; border: 0; }
+.sw { width: 30px; height: 30px; flex: none; display: block; overflow: visible; }
+.placeholder-note { margin: 12px 8px; padding: 12px 14px; border: 2px dashed var(--ink); border-radius: 18px; color: var(--muted); font-size: .88rem; }
+.note-row { display: flex; align-items: center; gap: 10px; padding: 4px 8px 6px; font-size: .82rem; color: var(--muted); font-weight: 700; }
+.mini-gate { width: 12px; height: 12px; margin: 0 6px; border-radius: 50%; border: 2px solid var(--turnstile); background: #fff; flex: none; }
+
+footer { padding: 34px 0 40px; color: var(--ink); font-size: .82rem; }
+
+@media (max-width: 1080px) {
+  .collage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 70vh; min-height: 460px; }
+  .panel { border-left: 0; border-top: 3px solid var(--ink); }
+  .panel-body { max-height: 420px; }
+}
+@media (max-width: 560px) {
+  .collage { grid-template-columns: 1fr; }
+  .layer-btn { width: 64px; }
+  .layer-btn svg { height: 42px; }
+  .pop { width: 236px; }
+}
+
+/* SVG */
+.hit { cursor: pointer; }
+.area { transition: filter .12s ease; }
+.area.hover, .area:focus-visible { filter: brightness(1.08) drop-shadow(0 0 6px rgba(255,250,230,.95)); outline: none; }
+.mk { cursor: pointer; }
+.mk:focus { outline: none; }
+.mk .ring { opacity: 0; }
+.mk.hover .ring, .mk:focus-visible .ring { opacity: 1; }
+.lbl { opacity: 0; transition: opacity .15s ease; }
+.lbl.on { opacity: 1; }
+.cat-hidden { display: none; }
+@media (prefers-reduced-motion: reduce) { .area, .lbl { transition: none; } .layer-btn:hover { transform: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap head">
+    <h1>1 park, 4 futures</h1>
+    <p class="lede">We can all agree that urban parks are great! They offer us a break from the grey and allow us to just relax in nature. But did you ever stop and wonder what this nature you love so much actually is?</p>
+  </div>
+</header>
+
+<section class="wrap natures" aria-label="The four scenarios">
+  <div class="collage">
+    <a class="nat" href="#well-being" data-scenario="well-being">
+      <img src="nature-functional-greening.svg" alt="Illustration of a mown park lawn with trees, a path, a bench and a flower bed">
+      <div class="card"><span class="num">Scenario 1 · Functional greening</span><h3>Anthropocentric Park</h3><p>Humans first! A park designed to minimise stress and maximise well-being, that's it!</p><span class="go">See it on the map →</span></div>
+    </a>
+    <a class="nat" href="#fourth-nature" data-scenario="fourth-nature">
+      <img src="nature-fourth.svg" alt="Illustration of rubble wasteland with buddleia, willowherb, a fox and pigeons in front of city blocks">
+      <div class="card"><span class="num">Scenario 2 · Fourth nature</span><h3>Fourth-Nature Park</h3><p>What if London's nature isn't wetlands and beavers anymore but rather pigeons, foxes and parakeets? Welcome to the Fourth-Nature Park!</p><span class="go">See it on the map →</span></div>
+    </a>
+    <a class="nat" href="#restoration" data-scenario="restoration">
+      <img src="nature-old-wilderness.svg" alt="Illustration of a reed-fringed pond in front of old woodland and poplars">
+      <div class="card"><span class="num">Scenario 3 · Old wilderness</span><h3>Restoration Park</h3><p>What if we could restore London to its former natural state? Goodbye pigeons and shrubs and hello beavers and wetlands!</p><span class="go">See it on the map →</span></div>
+    </a>
+    <a class="nat" href="#forager" data-scenario="forager">
+      <img src="nature-cultural-landscape.svg" alt="Illustration of patchwork fields, hedgerows, a barn and grazing sheep">
+      <div class="card"><span class="num">Scenario 4 · Traditional cultural landscape</span><h3>Forager Park</h3><p>What's the best use of space in a city, if not houses? Food!</p><span class="go">See it on the map →</span></div>
+    </a>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="board-head">
+    <h2>Explore the scenarios</h2>
+    <p>Drag, zoom and hover. Switch scenarios from the bottom-left corner of the map.</p>
+  </div>
+  <div class="app" id="app">
+    <div class="stage" id="stage" tabindex="0" aria-label="Interactive park map. Drag to pan, scroll or use plus and minus to zoom.">
+      <svg id="map" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="map-title">
+        <title id="map-title">Map of Victoria Park redesigned for the selected scenario</title>
+        <defs id="defs"></defs>
+        <g id="world"></g>
+        <g id="markers"></g>
+      </svg>
+      <div class="cartouche" id="cartouche"><div class="t1" id="cart-t1"></div><div class="t2" id="cart-t2"></div></div>
+      <div class="zoombar" role="group" aria-label="Zoom">
+        <button type="button" id="zin" aria-label="Zoom in">+</button>
+        <button type="button" id="zout" aria-label="Zoom out">−</button>
+        <button type="button" id="zreset" class="reset" aria-label="Reset view">FIT</button>
+      </div>
+      <div class="layers" id="layers">
+        <div class="layer-main"><button type="button" class="layer-btn" id="layer-toggle" aria-expanded="false" aria-controls="layer-tray"></button></div>
+        <div class="layer-tray" id="layer-tray" hidden role="group" aria-label="Choose a scenario"></div>
+      </div>
+      <div class="scale">
+        <div class="scalebar"><span id="scale-lbl">100 m</span><div class="bar" id="scale-bar"></div></div>
+        <svg class="compass" viewBox="-24 -24 48 48" aria-label="North arrow" role="img">
+          <circle r="22" fill="#fdf2d0" stroke="#2c4a1b" stroke-width="2.5"/>
+          <path d="M0,-6 L6,14 L0,10 L-6,14 Z" fill="#d8452f"/>
+          <text y="-6" text-anchor="middle" font-family="Titan One, sans-serif" font-size="13" fill="#2c4a1b">N</text>
+        </svg>
+      </div>
+      <div class="pop" id="pop" role="dialog" aria-live="polite"><button type="button" class="x" id="pop-x" aria-label="Close note">✕</button><span class="cat" id="pop-cat"></span><h4 id="pop-t"></h4><div id="pop-b"></div></div>
+    </div>
+    <aside class="panel" id="panel" aria-labelledby="panel-h">
+      <div class="panel-head"><div class="tag" id="panel-tag"></div><h2 id="panel-h"></h2><p id="panel-p"></p></div>
+      <div class="panel-body" id="panel-body"></div>
+    </aside>
+  </div>
+</main>
+<footer><div class="wrap">Base geography traced from the Victoria Park outline map (Tower Hamlets). Scenario layouts are speculative. Scale approximate, derived from the park's 86 ha area. Sources open from the (Source) links in each note.</div></footer>
+<script>
+const PARK = {"east":[[1885,386],[1859,372],[1767,337],[1702,292],[1666,284],[1641,259],[1619,257],[1608,262],[1526,348],[1418,431],[1351,493],[1337,518],[1338,529],[1331,546],[1332,573],[1230,705],[1218,726],[1097,882],[1067,910],[1007,948],[994,966],[994,984],[1057,1162],[1062,1188],[1072,1201],[1089,1239],[1099,1250],[1118,1256],[1132,1253],[1247,1195],[1292,1179],[1324,1176],[1341,1168],[1418,1115],[1465,1089],[1496,1063],[1560,1019],[1641,974],[1653,962],[1684,947],[1695,936],[1715,926],[1802,865],[1837,846],[1855,833],[1872,814],[1907,803],[1932,778],[1974,751],[2019,713],[2025,689],[2017,671],[2003,615],[1946,516],[1927,473],[1915,432],[1897,399]],"west":[[1051,1278],[1051,1264],[1039,1216],[981,1052],[963,1012],[945,1000],[928,1000],[917,1005],[873,1047],[849,1059],[771,1079],[713,1087],[673,1086],[653,1081],[595,1053],[553,1025],[516,1009],[480,1003],[432,1006],[398,1019],[356,1046],[342,1060],[329,1085],[327,1118],[332,1128],[344,1138],[501,1199],[592,1245],[626,1253],[782,1315],[829,1341],[918,1343],[957,1338],[1024,1309],[1045,1292]]} ;
+const GATES = [["Molesworth Gate",1625.3,257.6],["Riseholme Gate",1767.0,337.0],["Cadogan Gate",1909.0,421.0],["St Mark's Gate",2022.3,683.0],["St Mark's Car Park Gate",2000.1,729.0],["Lock House Gate",1877.8,812.2],["Gunmaker's Gate",1595.1,999.5],["Terrace Gate",1233.3,1201.9],["Crown Gate (East)",1114.8,1255.0],["Crown Gate (West)",1045.0,1292.0],["Diamond Jubilee Gate (East)",1059.5,1175.0],["Diamond Jubilee Gate (West)",1024.8,1175.7],["Royal Gate (East)",994.0,966.0],["Royal Gate (West)",947.6,1001.7],["Rockmead Gate",1097.0,882.0],["Iveagh Gate",1182.6,771.6],["Cawley Gate",1256.0,671.4],["Queen's Gate",1331.3,555.0],["St Augustine's Gate",1538.6,334.8],["Gore Gate",700.7,1086.7],["St Agnes Gate",415.0,1012.5],["Canal Gate",336.8,1132.0],["Bonner Gate",592.0,1245.0],["Rose Gate",705.4,1284.6],["Arcade Gate",817.9,1334.9]] ;
+
+window.PRE_LAYOUT = {"trees": {"fourth-nature": [[-17.5, -30.3], [-0.0, -56], [7, 0], [18.2, 10.5], 1, [-12.1, -7], 1, 1, [30.3, -17.5], 0, 1, 1, 1], "restoration": [], "forager": [1, 1, 1, [7, 0], 1, 1, 1, 1, 1, [-0.0, -14], [-0.0, -14], 1, 1, 0, 0, [54.6, -31.5], 0], "well-being": [0, 0, 0, [-7, 0], [7, 0], [-7, -12.1], [-0.0, -28], [28, -48.5], [7, 0], [-0.0, -21], 1, 1, 1, [-28, 48.5], [28, 48.5], [14, 0], [24.2, 14], [-24.2, 14], [-36.4, 21], 1, [7, 0], [18.2, 10.5], [30.3, 17.5], 0, 0, 0, 0, 0, [54.6, -31.5], 0, [24.5, 42.4], [21, 36.4], 0, 0, [-36.4, 21], 0]}, "rooms": [[1217.4, 897.2, 0.8088126205400267, 0.5880664459524746], [1508.6, 531.2, 0.7289994237070203, 0.6845143097370807], [764.5, 1199.2, 0.38665879051419555, -0.92222284710264]]};
+const NS = "http://www.w3.org/2000/svg";
+const M_PER_UNIT = 1.13;            // metres per map unit (from 86 ha park area)
+const WALK_M_PER_MIN = 4000 / 60;    // 4 km/h
+const WORLD = { x: 250, y: 150, w: 1990, h: 1225 };
+const BASE = { href: "base.png", x: 240, y: 150, w: 1994, h: 1222 };
+
+const svg = document.getElementById("map");
+const world = document.getElementById("world");
+const markersG = document.getElementById("markers");
+const defs = document.getElementById("defs");
+const stage = document.getElementById("stage");
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const polyD = pts => "M" + pts.map(p => p.join(",")).join("L") + "Z";
+
+// Catmull–Rom spline through points -> SVG path data
+function spline(pts, closed = true, t = 0.5) {
+  const n = pts.length; if (n < 2) return "";
+  const P = i => closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))];
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  const segs = closed ? n : n - 1;
+  for (let i = 0; i < segs; i++) {
+    const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);
+    const c1 = [p1[0] + (p2[0] - p0[0]) * t / 3, p1[1] + (p2[1] - p0[1]) * t / 3];
+    const c2 = [p2[0] - (p3[0] - p1[0]) * t / 3, p2[1] - (p3[1] - p1[1]) * t / 3];
+    d += `C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${(+p2[0]).toFixed(1)},${(+p2[1]).toFixed(1)}`;
+  }
+  return closed ? d + "Z" : d;
+}
+// Densify a smooth open curve and add a sideways sine wiggle -> meander points
+function meander(pts, amp = 10, wave = 70, seed = 1) {
+  const tmp = el("path", { d: spline(pts, false) }, defs);
+  const L = tmp.getTotalLength(); const out = [];
+  const step = wave / 4;
+  for (let s = 0; s <= L; s += step) {
+    const a = tmp.getPointAtLength(s), b = tmp.getPointAtLength(Math.min(L, s + 1));
+    let nx = -(b.y - a.y), ny = b.x - a.x; const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+    const fade = Math.min(1, s / (wave * 0.8), (L - s) / (wave * 0.8));
+    const off = Math.sin(s / wave * Math.PI * 2 + seed) * amp * fade;
+    out.push([+(a.x + nx * off).toFixed(1), +(a.y + ny * off).toFixed(1)]);
+  }
+  const e = tmp.getPointAtLength(L); out.push([+e.x.toFixed(1), +e.y.toFixed(1)]);
+  tmp.remove();
+  return out;
+}
+// Offset an open polyline sideways
+function offsetLine(pts, d) {
+  return pts.map((p, i) => {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+    let nx = -(b[1] - a[1]), ny = b[0] - a[0]; const nl = Math.hypot(nx, ny) || 1;
+    return [+(p[0] + nx / nl * d).toFixed(1), +(p[1] + ny / nl * d).toFixed(1)];
+  });
+}
+// Organic blob around a centre
+function blobPts(cx, cy, rx, ry, rot = 0, seed = 1, wob = 0.14, n = 10) {
+  const pts = []; const a0 = rot * Math.PI / 180;
+  let s = seed * 9301 + 49297;
+  const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2;
+    const k = 1 + (rnd() - 0.5) * 2 * wob;
+    const x = Math.cos(a) * rx * k, y = Math.sin(a) * ry * k;
+    pts.push([+(cx + x * Math.cos(a0) - y * Math.sin(a0)).toFixed(1), +(cy + x * Math.sin(a0) + y * Math.cos(a0)).toFixed(1)]);
+  }
+  return pts;
+}
+function sample(pathEl, step = 5) {
+  const L = pathEl.getTotalLength(), out = [];
+  for (let s = 0; s <= L; s += step) { const p = pathEl.getPointAtLength(s); out.push([p.x, p.y, s]); }
+  return out;
+}
+
+/* Pop-up texts written by the user, keyed by feature id: { id: [[text, sourceKey, ...], ...] } */
+window.POPUP_TEXT = {
+ "treebelt": [
+  [
+   "Trees sourround the entire park, creating a feeling of being out of the city, while keeping the middle of the park open; optimal for minimising stress"
+  ]
+ ],
+ "silent": [
+  [
+   "The silent zone sits in the centre of the park, creating a quiet oasis filled with the sound of birds and running water. Studies have shown this environment to reduce stress and increase well-being.",
+   "buxton"
+  ]
+ ],
+ "thicket": [
+  [
+   "Dense native shrubs allowing birds to nest at the heart of the Silent Zone, supplying the bird song the zone depends on."
+  ]
+ ],
+ "meadow-1": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-2": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-3": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-4": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-5": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-6": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-7": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-8": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-9": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-10": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-11": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "meadow-12": [
+  [
+   "Patches of colourful wild-flowers speckled around the park, increasing percieved biodiversity through both plants and insects",
+   "southon18",
+   "southon17"
+  ]
+ ],
+ "stream": [
+  [
+   "A stream running from the Hollow Pool, under Grove Road and along the edge of the Silent Zone into the Hertford Union Canal. The sound of running water has been shown to be the most effective natural sound for improving mood and health.",
+   "buxton"
+  ]
+ ],
+ "pool": [
+  [
+   "The Hollow is filled back in as a pool where the old West Lake used to be, becoming the source of the park's stream. As the site has always been dry, the pool relies on harvested rainwater and pumping to stay full.",
+   "th"
+  ]
+ ],
+ "loop-long": [
+  [
+   "A {m} m loop following the inside of the tree belt, taking about {min} minutes. Three walks a week add up to the 120 minutes in nature linked to better health, and more paths will be added over time wherever visitors wear desire lines into the grass.",
+   "white"
+  ]
+ ],
+ "loop-hollow": [
+  [
+   "A {m} m loop around the Hollow Pool and past the café, taking about {min} minutes. More paths will be added over time wherever visitors wear desire lines into the grass."
+  ]
+ ],
+ "gate-0": [
+  [
+   "One of six main entrances, where visitors scan a booked slot or a nature prescription at the turnstile. Slots are 45 minutes, long enough to walk the full Long dose loop, while research shows stress hormones drop fastest within the first 20 to 30 minutes in nature.",
+   "hunter"
+  ]
+ ],
+ "gate-5": [
+  [
+   "One of six main entrances, where visitors scan a booked slot or a nature prescription at the turnstile. Slots are 45 minutes, long enough to walk the full Long dose loop, while research shows stress hormones drop fastest within the first 20 to 30 minutes in nature.",
+   "hunter"
+  ]
+ ],
+ "gate-8": [
+  [
+   "One of six main entrances, where visitors scan a booked slot or a nature prescription at the turnstile. Slots are 45 minutes, long enough to walk the full Long dose loop, while research shows stress hormones drop fastest within the first 20 to 30 minutes in nature.",
+   "hunter"
+  ]
+ ],
+ "gate-12": [
+  [
+   "One of six main entrances, where visitors scan a booked slot or a nature prescription at the turnstile. Slots are 45 minutes, long enough to walk the full Long dose loop, while research shows stress hormones drop fastest within the first 20 to 30 minutes in nature.",
+   "hunter"
+  ]
+ ],
+ "gate-17": [
+  [
+   "One of six main entrances, where visitors scan a booked slot or a nature prescription at the turnstile. Slots are 45 minutes, long enough to walk the full Long dose loop, while research shows stress hormones drop fastest within the first 20 to 30 minutes in nature.",
+   "hunter"
+  ]
+ ],
+ "gate-21": [
+  [
+   "One of six main entrances, where visitors scan a booked slot or a nature prescription at the turnstile. Slots are 45 minutes, long enough to walk the full Long dose loop, while research shows stress hormones drop fastest within the first 20 to 30 minutes in nature.",
+   "hunter"
+  ]
+ ],
+ "room-1": [
+  [
+   "A small clearing enclosed by a dense hedge with a single bench, booked by the slot. It gives visitors a private place to sit in nature without feeling walled in, the combination found to be most restorative for stressed people.",
+   "grahn"
+  ]
+ ],
+ "room-2": [
+  [
+   "A small clearing enclosed by a dense hedge with a single bench, booked by the slot. It gives visitors a private place to sit in nature without feeling walled in, the combination found to be most restorative for stressed people.",
+   "grahn"
+  ]
+ ],
+ "room-3": [
+  [
+   "A small clearing enclosed by a dense hedge with a single bench, looking out over the Hollow Pool. Mixing enclosed greenery with open views was rated the most restorative setting.",
+   "stigs"
+  ]
+ ],
+ "cafe": [
+  [
+   "The Pavilion Café is kept from today's park as the only social space, placed as far as possible from the Silent Zone. Socialising was the least preferred quality in a restorative park, so the café sits at the edge.",
+   "grahn"
+  ]
+ ],
+ "f-wood": [
+  [
+   "The planted tree belt is left completely alone, with self-sown birch, sycamore and buddleia filling the gaps and ring-necked parakeets roosting in the tallest trees. Berlin's Südgelände shows how a wood that grew by itself on an old railyard can be kept for both nature and people.",
+   "kowarik"
+  ]
+ ],
+ "f-terraces": [
+  [
+   "Rubble from the park's demolished buildings, crushed and stacked into terraces for plants to colonise. It recreates on purpose the wild flora that grew on London's wartime bombsites.",
+   "hewitt"
+  ]
+ ],
+ "f-scrub-0": [
+  [
+   "Patches of purple buddleia and pink rosebay willowherb, the first plants to take over London's bombsites after the war. They grow on almost nothing and feed butterflies late into the summer.",
+   "hewitt"
+  ]
+ ],
+ "f-scrub-1": [
+  [
+   "Patches of purple buddleia and pink rosebay willowherb, the first plants to take over London's bombsites after the war. They grow on almost nothing and feed butterflies late into the summer.",
+   "hewitt"
+  ]
+ ],
+ "f-scrub-2": [
+  [
+   "Patches of purple buddleia and pink rosebay willowherb, the first plants to take over London's bombsites after the war. They grow on almost nothing and feed butterflies late into the summer.",
+   "hewitt"
+  ]
+ ],
+ "f-scrub-3": [
+  [
+   "Patches of purple buddleia and pink rosebay willowherb, the first plants to take over London's bombsites after the war. They grow on almost nothing and feed butterflies late into the summer.",
+   "hewitt"
+  ]
+ ],
+ "f-basin": [
+  [
+   "The West Lake is drained and left to its own devices. Rain pools on the clay, reeds and willow move in by themselves, and the wet hollow adds habitats that the dry rubble can't provide.",
+   "bonthoux"
+  ]
+ ],
+ "f-plot-0": [
+  [
+   "A freshly cleared plot of bare crushed brick, the starting point for every other plot. Plots of different ages side by side create the widest mix of species.",
+   "bonthoux"
+  ]
+ ],
+ "f-plot-1": [
+  [
+   "Five years after clearing, willowherb, ragwort and grasses have covered most of the rubble. Plots of different ages side by side create the widest mix of species.",
+   "bonthoux"
+  ]
+ ],
+ "f-plot-2": [
+  [
+   "Ten years after clearing, buddleia and bramble scrub have taken over, full of nesting birds and insects. Plots of different ages side by side create the widest mix of species.",
+   "bonthoux"
+  ]
+ ],
+ "f-plot-3": [
+  [
+   "Fifteen years after clearing, a young birch wood is starting to close over. Plots of different ages side by side create the widest mix of species.",
+   "bonthoux"
+  ]
+ ],
+ "f-trails": [
+  [
+   "Apart from the walkway there are no planned paths: trails form wherever people actually walk and disappear again when they stop. Like Berlin's Südgelände, the site decides the routes.",
+   "kowarik"
+  ]
+ ],
+ "f-walkway": [
+  [
+   "A raised walkway linking the main gates, letting visitors cross the wasteland while the ground below grows undisturbed. Mown strips along its edges show the wildness is intended, which makes messy nature easier for people to accept.",
+   "kowarik",
+   "nassauer"
+  ]
+ ],
+ "f-loft": [
+  [
+   "A supervised loft where the park's feral pigeons can nest. Keepers swap the eggs for dummies, keeping the flock healthy and stable without culling, as Basel did with its pigeons.",
+   "pigeons"
+  ]
+ ],
+ "f-den-1": [
+  [
+   "Earth banks under scrub along the park edge where foxes can dig their dens, close to the gardens they forage in. Fox sightings drop as green space increases, so the dens sit next to the houses rather than in the middle of the park.",
+   "scott"
+  ]
+ ],
+ "f-den-2": [
+  [
+   "Earth banks under scrub along the park edge where foxes can dig their dens, close to the gardens they forage in. Fox sightings drop as green space increases, so the dens sit next to the houses rather than in the middle of the park.",
+   "scott"
+  ]
+ ],
+ "f-den-3": [
+  [
+   "Earth banks under scrub along the park edge where foxes can dig their dens, close to the gardens they forage in. Fox sightings drop as green space increases, so the dens sit next to the houses rather than in the middle of the park.",
+   "scott"
+  ]
+ ],
+ "r-carr": [
+  [
+   "The tree belt is replanted as a wet woodland of willow and alder standing in shallow water, providing food for the beavers and dense cover along the park's edge.",
+   "brazier"
+  ]
+ ],
+ "r-scrapes": [
+  [
+   "Grassland that floods every winter, dotted with shallow pools that fill with rain and dry out in summer. It gives storks and cranes a place to feed between the wetter habitats."
+  ]
+ ],
+ "r-swamp-0": [
+  [
+   "Dense reed and sedge growing in permanently wet ground, filling the gaps between the habitats so the whole park works as one connected wetland rather than separate patches."
+  ]
+ ],
+ "r-swamp-1": [
+  [
+   "Dense reed and sedge growing in permanently wet ground, filling the gaps between the habitats so the whole park works as one connected wetland rather than separate patches."
+  ]
+ ],
+ "r-swamp-2": [
+  [
+   "Dense reed and sedge growing in permanently wet ground, filling the gaps between the habitats so the whole park works as one connected wetland rather than separate patches."
+  ]
+ ],
+ "r-swamp-3": [
+  [
+   "Dense reed and sedge growing in permanently wet ground, filling the gaps between the habitats so the whole park works as one connected wetland rather than separate patches."
+  ]
+ ],
+ "r-swamp-4": [
+  [
+   "Dense reed and sedge growing in permanently wet ground, filling the gaps between the habitats so the whole park works as one connected wetland rather than separate patches."
+  ]
+ ],
+ "r-swamp-6": [
+  [
+   "Dense reed and sedge growing in permanently wet ground, filling the gaps between the habitats so the whole park works as one connected wetland rather than separate patches."
+  ]
+ ],
+ "r-crane": [
+  [
+   "A large reedbed in shallow standing water, screened from the path by a thick fringe of reeds so visitors can't get close to the nest. Cranes nest in undisturbed reedbeds where the water keeps predators away.",
+   "crane"
+  ]
+ ],
+ "r-stork": [
+  [
+   "A long, wet, unmown meadow beneath a cluster of nest platforms. Storks need a colony to start breeding and feed on grasshoppers, beetles and worms, so the meadow is left long and wet for them.",
+   "stork",
+   "storkfaq"
+  ]
+ ],
+ "r-vole": [
+  [
+   "Slow ditches branching off the brook, with soft earth banks and tall grass and sedge on either side. No trees are planted along them, giving water voles the sunny, soft banks they need to burrow into.",
+   "ptes"
+  ]
+ ],
+ "r-fen": [
+  [
+   "The old West Lake becomes a reedbed fen around open pools, home to a second water vole colony. Up to 87% of the world's wetlands may have been lost since 1700, and the fen brings a small piece of that back.",
+   "davidson"
+  ]
+ ],
+ "r-enclosure": [
+  [
+   "An 8-hectare fenced wetland, about a tenth of the park, for a licensed family of Eurasian beavers. Ealing used the same model for London's first beaver release, although Enfield's enclosure shows reintroductions can still fail.",
+   "ealing",
+   "enfield"
+  ]
+ ],
+ "r-otter": [
+  [
+   "An unbroken strip of dense scrub and log piles along both canal banks, letting otters travel between the canals under cover. Adding vegetation and buffer zones along the water is the main way to bring otter habitat back.",
+   "otter"
+  ]
+ ],
+ "r-channels": [
+  [
+   "One connected stream fed by canal water, running from the head pond through every habitat, under Grove Road and out into Regent's Canal. Since the site has always been dry, the whole wetland depends on this borrowed water.",
+   "th"
+  ]
+ ],
+ "r-ponds": [
+  [
+   "Three ponds held back by the beavers' own dams, with the brook starting at the top one. Beaver dams slow the water down, reduce flooding downstream and store water for dry spells.",
+   "brazier"
+  ]
+ ],
+ "r-culvert": [
+  [
+   "Where the brook meets a road or towpath it continues underground through a culvert, each with a dry ledge so otters and water voles can pass through safely instead of crossing the road.",
+   "cardiff"
+  ]
+ ],
+ "r-fence": [
+  [
+   "A buried mesh fence runs around the outside of the tree belt, keeping beavers and otters off the roads and guiding them towards the green bridge and culverts instead.",
+   "cardiff"
+  ]
+ ],
+ "r-bridge": [
+  [
+   "A planted bridge over Grove Road joining the two halves of the park for wildlife only. Green bridges stop animal populations from becoming isolated and reduce road accidents.",
+   "greenbr"
+  ]
+ ],
+ "r-elevated": [
+  [
+   "Raised sections of the path where it crosses water or passes the crane marsh, so people never cut a habitat in two."
+  ]
+ ],
+ "r-loop": [
+  [
+   "The park's only path, a {m} m loop around the edge taking about {min} minutes, leaving the entire interior to wildlife."
+  ]
+ ],
+ "r-base-0": [
+  [
+   "A post on the path facing the beaver wetland, naming the beaver and when it disappeared from London. Each generation accepts the nature it grew up with as normal, so the markers show visitors what has been lost.",
+   "soga18b"
+  ]
+ ],
+ "r-base-1": [
+  [
+   "A post on the path facing the crane marsh, naming the common crane and when it disappeared from London. Each generation accepts the nature it grew up with as normal, so the markers show visitors what has been lost.",
+   "soga18b"
+  ]
+ ],
+ "r-base-2": [
+  [
+   "A post on the path facing the stork meadow, naming the white stork and when it disappeared from London. Each generation accepts the nature it grew up with as normal, so the markers show visitors what has been lost.",
+   "soga18b"
+  ]
+ ],
+ "r-base-3": [
+  [
+   "A post on the path facing the otter corridor, naming the Eurasian otter and when it disappeared from London. Each generation accepts the nature it grew up with as normal, so the markers show visitors what has been lost.",
+   "soga18b"
+  ]
+ ],
+ "r-base-4": [
+  [
+   "A post on the path facing the water vole ditches, naming the water vole and when it disappeared from London. Each generation accepts the nature it grew up with as normal, so the markers show visitors what has been lost.",
+   "soga18b"
+  ]
+ ],
+ "r-lodge": [
+  [
+   "The beaver family's lodge of sticks and mud in the middle pond, well out of reach of the path."
+  ]
+ ],
+ "r-st-1": [
+  [
+   "Nest platforms on tall poles, grouped together so arriving storks find a ready-made colony to settle in.",
+   "stork"
+  ]
+ ],
+ "r-st-2": [
+  [
+   "Nest platforms on tall poles, grouped together so arriving storks find a ready-made colony to settle in.",
+   "stork"
+  ]
+ ],
+ "r-st-3": [
+  [
+   "Nest platforms on tall poles, grouped together so arriving storks find a ready-made colony to settle in.",
+   "stork"
+  ]
+ ],
+ "r-holt-3": [
+  [
+   "An artificial otter holt of logs and earth hidden under scrub on the Regent's Canal bank, with two more along the Hertford Union Canal. Holts give otters safe resting places where natural ones are missing.",
+   "otter"
+  ]
+ ],
+ "r-mink": [
+  [
+   "A floating raft that detects and traps American mink, which can wipe out a whole water vole colony. Controlling mink goes hand in hand with restoring the banks.",
+   "ptes"
+  ]
+ ],
+ "r-sluice": [
+  [
+   "A sluice controlling how much canal water flows into the park, with mesh to stop the beavers burrowing into the towpath. Beaver wetlands need managing to avoid clashing with surrounding infrastructure.",
+   "brazier"
+  ]
+ ],
+ "r-gateway": [
+  [
+   "The park's only information point, explaining what is being restored and why visitors stay on the edge. London's planned rewilding zones leave Victoria Park out, which is exactly what this scenario questions.",
+   "gla"
+  ]
+ ],
+ "g-forest": [
+  [
+   "The tree belt becomes a food forest of fruit and nut trees over berry bushes and herbs, free for anyone to pick. Many species suit urban food forests, yet few city tree plans include food at all.",
+   "clark"
+  ]
+ ],
+ "g-hay": [
+  [
+   "The open centre stays a hay meadow, cut once a year and shared by everyone: a commons for harvest festivals, picnics and play."
+  ]
+ ],
+ "g-beds-tail": [
+  [
+   "Raised beds filled with clean soil for leafy greens and salad. Leafy crops take up lead from old city soils, so they are grown above the ground.",
+   "entwistle"
+  ]
+ ],
+ "g-beds-canal": [
+  [
+   "Rows of vegetables along the canal, watered by a small pump. Urban land like this could supply a large share of a city's fruit and veg.",
+   "he"
+  ]
+ ],
+ "g-beds-north": [
+  [
+   "Beds worked in common, where everyone who works a shift shares the harvest. Growing food on just 10% of a city's green space could give 15% of residents their five a day.",
+   "edmondson"
+  ]
+ ],
+ "g-beds-west": [
+  [
+   "Beds run with local schools and gardening courses next to the community kitchen. Gardening has been linked to lower stress and higher life satisfaction.",
+   "soga17"
+  ]
+ ],
+ "g-orchard": [
+  [
+   "The drained West Lake becomes an orchard instead of vegetable beds, since its old silt can hold heavy metals. Fruit trees cope with contaminated soil far better than leafy crops.",
+   "entwistle"
+  ]
+ ],
+ "g-harvest": [
+  [
+   "A {m} m loop through the food forest and past every market garden, taking about {min} minutes."
+  ]
+ ],
+ "g-orchardwalk": [
+  [
+   "A {m} m loop around the Lake orchard and the kitchen, taking about {min} minutes."
+  ]
+ ],
+ "g-kitchen": [
+  [
+   "The old café becomes a shared kitchen where growers cook together, and surplus food feeds a weekly park meal. Urban growing on this scale could feed a large share of the city's fruit and veg needs.",
+   "edmondson"
+  ]
+ ],
+ "g-council": [
+  [
+   "Growers meet here monthly to set shifts, share out the harvest and deal with free-riders. Shared resources like this last when the people using them make and enforce their own rules.",
+   "ostrom"
+  ]
+ ],
+ "g-yard": [
+  [
+   "A shared yard with tools, a seed library and compost bays turning the park's waste back into soil."
+  ]
+ ],
+ "f-parakeet": [
+  [
+   "The park's tallest self-sown trees are kept as a roost for ring-necked parakeets, London's best-known newcomers, which gather in large flocks in parkland every evening. Large nest boxes are added too, since parakeets take tree holes that native birds such as nuthatches would otherwise use.",
+   "nnss",
+   "songbird"
+  ]
+ ]
+};
+/* ---------- Sources (linked from each note) ---------- */
+const SRC = {
+  hunter:   { cite: "Hunter, Gillespie & Chen (2019), Frontiers in Psychology", url: "https://doi.org/10.3389/fpsyg.2019.00722" },
+  white:    { cite: "White et al. (2019), Scientific Reports", url: "https://doi.org/10.1038/s41598-019-44097-3" },
+  grahn:    { cite: "Grahn & Stigsdotter (2010), Landscape and Urban Planning", url: "https://doi.org/10.1016/j.landurbplan.2009.10.012" },
+  stigs:    { cite: "Stigsdotter et al. (2017), Landscape and Urban Planning", url: "https://pub.epsilon.slu.se/14834/" },
+  southon18:{ cite: "Southon et al. (2018), Landscape and Urban Planning", url: "https://doi.org/10.1016/j.landurbplan.2017.12.002" },
+  southon17:{ cite: "Southon et al. (2017), Landscape and Urban Planning", url: "https://doi.org/10.1016/j.landurbplan.2016.08.003" },
+  buxton:   { cite: "Buxton et al. (2021), PNAS", url: "https://doi.org/10.1073/pnas.2013097118" },
+  gsp:      { cite: "Sheffield Hallam University (2024), Green Social Prescribing evaluation", url: "https://shura.shu.ac.uk/34170/" },
+  th:       { cite: "Tower Hamlets Council (n.d.), Victoria Park history", url: "https://towerhamlets.gov.uk/lgnl/leisure_and_culture/parks_and_open_spaces/victoria_park/history.aspx" },
+};
+
+/* ---------- Shared definitions ---------- */
+function buildDefs() {
+  defs.innerHTML = `
+    <clipPath id="parkClip"><path d="${polyD(PARK.east)} ${polyD(PARK.west)}"/></clipPath>
+    <pattern id="grass" width="26" height="26" patternUnits="userSpaceOnUse">
+      <rect width="26" height="26" fill="#b4d88a"/>
+      <circle cx="5" cy="6" r="1.6" fill="#a2cc76"/><circle cx="18" cy="15" r="1.4" fill="#a2cc76"/><circle cx="10" cy="21" r="1.2" fill="#c3e09c"/>
+    </pattern>
+    <pattern id="trees" width="44" height="40" patternUnits="userSpaceOnUse">
+      <rect width="44" height="40" fill="#5f9e4f"/>
+      <circle cx="10" cy="10" r="11" fill="#4b8a3f"/><circle cx="10" cy="8" r="7" fill="#6db35a"/>
+      <circle cx="32" cy="28" r="12" fill="#4b8a3f"/><circle cx="31" cy="25" r="7.5" fill="#76bb61"/>
+      <circle cx="36" cy="6" r="7" fill="#4b8a3f"/><circle cx="12" cy="33" r="8" fill="#55963f"/>
+    </pattern>
+    <pattern id="meadowA" width="30" height="30" patternUnits="userSpaceOnUse">
+      <rect width="30" height="30" fill="#d6eaa0"/>
+      <path d="M3 29 q1 -7 0 -13 M9 29 q-1 -6 1 -11 M16 29 q1 -8 -1 -14 M23 29 q-1 -6 1 -12 M28 29 q0 -5 -1 -9" stroke="#8fb35e" stroke-width="1.1" fill="none"/>
+      <circle cx="4" cy="15" r="2.9" fill="#e2589b"/><circle cx="4" cy="15" r="0.9" fill="#f7d24a"/>
+      <circle cx="16" cy="14" r="2.4" fill="#f2c230"/>
+      <circle cx="10" cy="18" r="1.8" fill="#8b6fd1"/><circle cx="23" cy="17" r="2.6" fill="#e2589b"/><circle cx="23" cy="17" r="0.8" fill="#f7d24a"/>
+      <circle cx="27" cy="21" r="1.6" fill="#ff8fc0"/><circle cx="12" cy="25" r="1.5" fill="#fff"/><circle cx="20" cy="26" r="1.7" fill="#8b6fd1"/>
+      <circle cx="7" cy="6" r="2.1" fill="#ff8fc0"/><circle cx="26" cy="5" r="1.5" fill="#fff"/>
+      <g transform="translate(17 5)"><ellipse cx="-1.6" cy="0" rx="1.8" ry="1.3" fill="#f08a24"/><ellipse cx="1.6" cy="0" rx="1.8" ry="1.3" fill="#f08a24"/><path d="M0 -1.4 V1.4" stroke="#2c2c2c" stroke-width=".7"/></g>
+      <g transform="translate(26 12)"><ellipse rx="1.5" ry="1" fill="#f7c43a"/><path d="M-.5 -1 V1 M.5 -1 V1" stroke="#2c2c2c" stroke-width=".5"/><ellipse cx="0" cy="-1.3" rx="1" ry=".6" fill="#ffffff" opacity=".85"/></g>
+    </pattern>
+    <pattern id="meadowB" width="30" height="30" patternUnits="userSpaceOnUse">
+      <rect width="30" height="30" fill="#e1eb9a"/>
+      <path d="M3 29 q1 -7 0 -13 M9 29 q-1 -6 1 -11 M16 29 q1 -8 -1 -14 M23 29 q-1 -6 1 -12 M28 29 q0 -5 -1 -9" stroke="#8fb35e" stroke-width="1.1" fill="none"/>
+      <circle cx="4" cy="15" r="2.9" fill="#e8402f"/><circle cx="4" cy="15" r="0.9" fill="#f7d24a"/>
+      <circle cx="16" cy="14" r="2.4" fill="#f7a81b"/>
+      <circle cx="10" cy="18" r="1.8" fill="#ffd93b"/><circle cx="23" cy="17" r="2.6" fill="#e8402f"/><circle cx="23" cy="17" r="0.8" fill="#f7d24a"/>
+      <circle cx="27" cy="21" r="1.6" fill="#e8402f"/><circle cx="12" cy="25" r="1.5" fill="#fff"/><circle cx="20" cy="26" r="1.7" fill="#ffd93b"/>
+      <circle cx="7" cy="6" r="2.1" fill="#e8402f"/><circle cx="26" cy="5" r="1.5" fill="#fff"/>
+      <g transform="translate(17 5)"><ellipse cx="-1.6" cy="0" rx="1.8" ry="1.3" fill="#f08a24"/><ellipse cx="1.6" cy="0" rx="1.8" ry="1.3" fill="#f08a24"/><path d="M0 -1.4 V1.4" stroke="#2c2c2c" stroke-width=".7"/></g>
+      <g transform="translate(26 12)"><ellipse rx="1.5" ry="1" fill="#f7c43a"/><path d="M-.5 -1 V1 M.5 -1 V1" stroke="#2c2c2c" stroke-width=".5"/><ellipse cx="0" cy="-1.3" rx="1" ry=".6" fill="#ffffff" opacity=".85"/></g>
+    </pattern>
+    <pattern id="meadowC" width="30" height="30" patternUnits="userSpaceOnUse">
+      <rect width="30" height="30" fill="#d3e9b0"/>
+      <path d="M3 29 q1 -7 0 -13 M9 29 q-1 -6 1 -11 M16 29 q1 -8 -1 -14 M23 29 q-1 -6 1 -12 M28 29 q0 -5 -1 -9" stroke="#8fb35e" stroke-width="1.1" fill="none"/>
+      <circle cx="4" cy="15" r="2.9" fill="#3f7fe0"/><circle cx="4" cy="15" r="0.9" fill="#f7d24a"/>
+      <circle cx="16" cy="14" r="2.4" fill="#ffffff"/>
+      <circle cx="10" cy="18" r="1.8" fill="#7a5fd6"/><circle cx="23" cy="17" r="2.6" fill="#3f7fe0"/><circle cx="23" cy="17" r="0.8" fill="#f7d24a"/>
+      <circle cx="27" cy="21" r="1.6" fill="#62b3f0"/><circle cx="12" cy="25" r="1.5" fill="#fff"/><circle cx="20" cy="26" r="1.7" fill="#7a5fd6"/>
+      <circle cx="7" cy="6" r="2.1" fill="#62b3f0"/><circle cx="26" cy="5" r="1.5" fill="#fff"/>
+      <g transform="translate(17 5)"><ellipse cx="-1.6" cy="0" rx="1.8" ry="1.3" fill="#f08a24"/><ellipse cx="1.6" cy="0" rx="1.8" ry="1.3" fill="#f08a24"/><path d="M0 -1.4 V1.4" stroke="#2c2c2c" stroke-width=".7"/></g>
+      <g transform="translate(26 12)"><ellipse rx="1.5" ry="1" fill="#f7c43a"/><path d="M-.5 -1 V1 M.5 -1 V1" stroke="#2c2c2c" stroke-width=".5"/><ellipse cx="0" cy="-1.3" rx="1" ry=".6" fill="#ffffff" opacity=".85"/></g>
+    </pattern>
+    <pattern id="hush" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <rect width="18" height="18" fill="#cfc6ee"/><rect width="18" height="5" fill="#c1b6e8"/>
+    </pattern>
+    <pattern id="thicket" width="18" height="18" patternUnits="userSpaceOnUse">
+      <rect width="18" height="18" fill="#3f7a3a"/><circle cx="5" cy="5" r="5" fill="#4f8f45"/><circle cx="14" cy="13" r="5" fill="#4a873f"/>
+    </pattern>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity=".18"/></filter>`;
+}
+
+/* ---------- Layers ---------- */
+const LAYERS = [
+  { id: "well-being", name: "Anthropocentric Park", short: "Anthropocentric", color: "var(--wellbeing)", hex: "#48752c",
+    tag: "Scenario 1 · Humans", sub: "Nature on prescription · London 2040",
+    blurb: "Nature as prescribed medicine. Booked entry through turnstiles, private hedge rooms, colourful meadows, running water and timed walking doses. The Pavilion Café is the one social space kept." },
+  { id: "fourth-nature", name: "Fourth-Nature Park", short: "Fourth-Nature", color: "var(--fourth)", hex: "#b4532a",
+    tag: "Scenario 2 · Species now", sub: "Placeholder scenario", blurb: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore." },
+  { id: "restoration", name: "Restoration Park", short: "Restoration", color: "var(--restoration)", hex: "#1f7a78",
+    tag: "Scenario 3 · Species past", sub: "Placeholder scenario", blurb: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo." },
+  { id: "forager", name: "Forager Park", short: "Forager", color: "var(--forager)", hex: "#8a6a12",
+    tag: "Scenario 4 · Community food", sub: "Placeholder scenario", blurb: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." },
+];
+
+const CATS = {
+  access:    { name: "Entry & booking", color: "#e0533d" },
+  rooms:     { name: "Hedge rooms", color: "#2f6b3a" },
+  amenity:   { name: "Café", color: "#c9822b" },
+  water:     { name: "Water", color: "#2f8fc4" },
+  landscape: { name: "Landscape zones", color: "#d9579b" },
+  routes:    { name: "Walking doses", color: "#3b78d4" },
+};
+
+const MAIN_GATES = ["Royal Gate (East)", "Crown Gate (East)", "Queen's Gate", "Molesworth Gate", "Lock House Gate", "Canal Gate"];
+const WEST_GATES = ["Gore Gate", "St Agnes Gate", "Canal Gate", "Bonner Gate", "Rose Gate", "Arcade Gate"];
+const isWestGate = name => name.includes("(West)") || WEST_GATES.includes(name);
+
+/* Well-being Park content. Body items: [text, sourceKey?] */
+const WB = (() => {
+  const f = [];
+  GATES.forEach((g, i) => {
+    const main = MAIN_GATES.includes(g[0]);
+    f.push({ id: "gate-" + i, cat: "access", kind: main ? "turnstile" : "minorgate", x: g[1], y: g[2],
+      title: g[0].replace(" (East)", ""), label: "Main entrance",
+      body: [[`Main entrance. Scan a booked slot or nature prescription at the turnstile.`],
+             ["Slots are 45 minutes: enough for the full Long dose loop, and past the 20 to 30 minutes in which cortisol fell fastest.", "hunter"],
+             [`The ${GATES.length - MAIN_GATES.length} smaller gates (red marks) are turnstiled too: booked visitors only.`]] });
+  });
+
+  // Each room sits beside a path (attach), on the side of the 'toward' point, with its opening onto the path
+  const rooms = [
+    { attach: "loop-long", near: [1420, 1045], toward: [1380, 1000] },
+    { attach: "loop-long", near: [1660, 375], toward: [1640, 320] },
+    { attach: "loop-hollow", near: [765, 1192], toward: [765, 1192] },
+  ];
+  rooms.forEach((r, i) => f.push({ id: "room-" + (i + 1), cat: "rooms", kind: "room", n: i + 1, x: r.near[0], y: r.near[1], ...r,
+    title: `Hedge room ${i + 1}`, label: "Bookable",
+    body: [["A hedged clearing with one bench, booked by the slot. Private, not walled in."],
+           (i === 2)
+             ? ["Overlooks the Hollow Pool: enclosure balanced with open views restored best.", "stigs"]
+             : ["Refuge plus nature, with little social activity, restored stressed people best.", "grahn"]] }));
+
+  f.push({ id: "cafe", cat: "amenity", kind: "cafe", x: 690, y: 1182, title: "Pavilion Café",
+    body: [["Kept from today's park: the one social space, as far as possible from the Silent Zone."],
+           ["Social was the least preferred sensory dimension, so the café sits at the edge.", "grahn"]] });
+
+  const meadowBody = (extra) => [
+    ["Tall, even, colourful planting: people judge it more species-rich than it is.", "southon18"],
+    extra || ["Preferred to bedding and lawn, and accepted off-season once people knew why.", "southon17"]];
+  const areas = [
+    { id: "pool", cat: "water", kind: "pool", pts: blobPts(880, 1205, 62, 50, 14, 3, 0.1, 12), lx: 880, ly: 1205,
+      title: "The Hollow Pool", label: "Source of the stream",
+      body: [["The filled-in Hollow becomes a pool on the old West Lake and the stream's source."],
+             ["The site was picked for being cheap and dry, so the pool needs harvested rainwater and pumping.", "th"]] },
+    { id: "silent", cat: "landscape", kind: "silent", pts: blobPts(1585, 690, 165, 108, -28, 7, 0.12, 12), lx: 1585, ly: 735,
+      title: "Silent Zone", label: "No talking · no phones",
+      body: [["No talking, phones or events. Planted for bird song, with the stream along its edge. No paths cross it."],
+             ["Natural sounds cut stress and lifted mood; bird song most of all.", "buxton"]] },
+    { id: "thicket", cat: "landscape", kind: "thicket", pts: blobPts(1628, 652, 46, 28, -28, 11, 0.2, 9), lx: 1628, ly: 652,
+      title: "Bird-song thicket", label: "Nesting shrubs",
+      body: [["Native shrubs at the heart of the Silent Zone, where the birds that supply its song nest."]] },
+    { id: "meadow-1", kind: "meadow", pat: "B", pts: blobPts(1185, 1040, 52, 98, 22, 2), lx: 1185, ly: 1040, title: "Wildflower meadow 1" },
+    { id: "meadow-2", kind: "meadow", pat: "A", pts: blobPts(1384, 989, 105, 42, -32, 5), lx: 1384, ly: 989, title: "Wildflower meadow 2" },
+    { id: "meadow-3", kind: "meadow", pat: "C", pts: blobPts(1593, 443, 82, 36, -38, 8), lx: 1593, ly: 443, title: "Wildflower meadow 3" },
+    { id: "meadow-4", kind: "meadow", pat: "A", pts: blobPts(1850, 650, 34, 74, 6, 4), lx: 1850, ly: 650, title: "Wildflower meadow 4" },
+    { id: "meadow-5", kind: "meadow", pat: "C", pts: blobPts(500, 1100, 48, 17, 28, 6), lx: 500, ly: 1100, title: "Wildflower meadow 5" },
+    { id: "meadow-6", kind: "meadow", pat: "B", pts: blobPts(1292, 775, 22, 42, 38, 9), lx: 1292, ly: 775, title: "Wildflower meadow 6" },
+    { id: "meadow-7", kind: "meadow", pat: "C", pts: blobPts(1265, 1070, 48, 30, -30, 12), lx: 1265, ly: 1070, title: "Wildflower meadow 7" },
+    { id: "meadow-8", kind: "meadow", pat: "B", pts: blobPts(1552, 909, 70, 26, -33, 13), lx: 1552, ly: 909, title: "Wildflower meadow 8" },
+    { id: "meadow-9", kind: "meadow", pat: "A", pts: blobPts(1385, 705, 32, 50, -10, 14), lx: 1385, ly: 705, title: "Wildflower meadow 9" },
+    { id: "meadow-10", kind: "meadow", pat: "B", pts: blobPts(568, 1136, 24, 12, 25, 15), lx: 568, ly: 1136, title: "Wildflower meadow 10" },
+    { id: "meadow-11", kind: "meadow", pat: "A", pts: blobPts(628, 1163, 30, 13, 22, 16), lx: 628, ly: 1163, title: "Wildflower meadow 11" },
+    { id: "meadow-12", kind: "meadow", pat: "C", pts: blobPts(1770, 470, 44, 26, 28, 17), lx: 1770, ly: 470, title: "Wildflower meadow 12" },
+  ].map(a => a.kind === "meadow" ? { cat: "landscape", label: "Wildflower meadow", body: meadowBody(), minor: !["meadow-1", "meadow-2", "meadow-3"].includes(a.id), ...a } : a);
+
+  const treebelt = { id: "treebelt", cat: "landscape", kind: "treebelt", title: "Tree belt", label: "Whole perimeter", lx: 1475, ly: 475,
+    body: [["A planted edge round the whole park: screens traffic and housing, so the inside can stay open."]] };
+
+  // The stream: from the Hollow Pool, under Grove Road, through the east half, past the Silent Zone, out to the Hertford Union Canal
+  const streamWay = [[880,1205],[930,1196],[960,1184],[1042,1172],[1098,1158],[1140,1112],[1132,1040],[1190,1000],[1270,975],[1318,915],[1385,868],[1452,826],[1522,792],[1592,812],[1638,858],[1655,915],[1666,958]];
+  const stream = { id: "stream", cat: "water", kind: "stream", title: "Meandering stream", label: "Pool to canal",
+    way: streamWay, lx: 1420, ly: 870,
+    body: [["Runs from the Hollow Pool, under Grove Road, past the Silent Zone to the Hertford Union Canal."],
+           ["Water was the most effective natural sound for mood and health.", "buxton"]] };
+
+  const routes = [
+    { id: "loop-long", cat: "routes", kind: "loop", color: "#3b78d4", title: "Long dose loop", label: "Extended prescription",
+      pts: [[1088,1010],[1170,881],[1274,746],[1391,593],[1502,469],[1611,373],[1716,387],[1829,473],[1898,614],[1889,705],[1793,787],[1638,901],[1484,992],[1347,1078],[1233,1133],[1147,1151],[1097,1088]],
+      body: d => [[`About ${d.m} m (${d.min} min) inside the tree belt: one full loop fits a 45-minute slot.`],
+                  ["More paths are added over time, wherever visitors wear desire lines into the grass."],
+                  ["Three a week gives the 120 minutes linked to better health; how they are split doesn't matter, which undercuts booked slots.", "white"]] },
+    { id: "loop-hollow", cat: "routes", kind: "loop", color: "#8a5bc4", title: "Pool circuit", label: "West half",
+      pts: [[465,1058], [409,1076], [424,1112], [480,1132], [536,1155], [590,1182], [646,1204], [702,1225], [757,1248], [813,1270], [869,1289], [929,1287], [984,1265], [980,1209], [960,1153], [939,1096], [894,1097], [838,1118], [779,1131], [720,1140], [660,1137], [603,1118], [551,1089], [498,1061]],
+      body: d => [[`About ${d.m} m (${d.min} min) round the Hollow Pool, past the café.`],
+                  ["More paths are added over time, wherever visitors wear desire lines into the grass."]] },
+  ];
+  // Secondary meandering paths (not interactive)
+  const wander = [
+    { pts: [[1147,1151],[1196,1095],[1236,1030],[1296,1005],[1347,1078]], amp: 9, seed: 1 },
+    { pts: [[1165,878],[1225,885],[1282,840],[1335,730]], amp: 9, seed: 2 },
+    { pts: [[1502,469],[1470,530],[1440,525]], amp: 5, seed: 4 },
+    { pts: [[1611,373],[1640,420],[1680,450]], amp: 5, seed: 5 },
+    { pts: [[1898,614],[1868,600],[1840,600]], amp: 4, seed: 6 },
+    { pts: [[1484,992],[1520,940],[1555,905],[1610,860]], amp: 8, seed: 7 },
+    { pts: [[430,1165],[470,1200],[540,1218],[560,1215]], amp: 6, seed: 10 },
+    { pts: [[925,1120],[905,1190],[895,1302]], amp: 7, seed: 11 },
+  ];
+  return { points: f, areas, treebelt, stream, routes, wander };
+})();
+
+/* ---------- Drawing ---------- */
+let currentLayer = LAYERS[0];
+let features = [];
+const hiddenCats = new Set();
+
+function drawBase(layer) {
+  world.innerHTML = ""; markersG.innerHTML = "";
+  el("image", { href: BASE.href, x: BASE.x, y: BASE.y, width: BASE.w, height: BASE.h, preserveAspectRatio: "none" }, world);
+  const st = el("g", { "font-family": "Nunito Sans, sans-serif", "font-weight": 700, "font-size": 15, fill: "#a8773a", "letter-spacing": 3, "pointer-events": "none" }, world);
+  [["WICK ROAD", 1270, 214, -2], ["CASSLAND ROAD", 1235, 318, -14], ["VICTORIA PARK ROAD", 1430, 400, -38], ["VICTORIA PARK ROAD", 1170, 690, -40],
+   ["GORE ROAD", 760, 1072, -8], ["GROVE ROAD", 1022, 1080, 72], ["OLD FORD ROAD", 1720, 1072, -12], ["CADOGAN TERRACE", 1990, 560, 66],
+   ["A12 EAST CROSS ROUTE", 2120, 330, 52], ["SEWARDSTONE ROAD", 620, 1330, 22]]
+    .forEach(([t, x, y, r]) => { const e = el("text", { x, y, transform: `rotate(${r} ${x} ${y})`, "text-anchor": "middle" }, st); e.textContent = t; });
+  const wl = el("g", { "font-family": "Nunito Sans, sans-serif", "font-style": "italic", "font-weight": 700, "font-size": 14, fill: "#2f7aa3", "pointer-events": "none" }, world);
+  [["Regent's Canal", 470, 1190, 22], ["Hertford Union Canal", 1720, 925, -33]]
+    .forEach(([t, x, y, r]) => { const e = el("text", { x, y, transform: `rotate(${r} ${x} ${y})`, "text-anchor": "middle" }, wl); e.textContent = t; });
+  const cm = el("text", { x: 1080, y: 515, "text-anchor": "middle", "font-family": "Nunito Sans, sans-serif", "font-weight": 700, "font-size": 15, "letter-spacing": 3, fill: "#7f9455", "pointer-events": "none" }, world);
+  cm.textContent = "WELL STREET COMMON";
+  const ground = el("g", { filter: "url(#soft)" }, world);
+  ["east", "west"].forEach(k => el("path", { d: polyD(PARK[k]), fill: GROUND[layer.id] || "#cfe0b4", stroke: "#2c4a37", "stroke-width": 5, "stroke-linejoin": "round" }, ground));
+}
+
+function drawWellbeing() {
+  const W = WB;
+  const inPark = el("g", { "clip-path": "url(#parkClip)" }, world);
+
+  // Tree belt
+  const tb = el("g", { class: "area hit", "data-id": "treebelt", tabindex: 0, role: "button", "aria-label": "Tree belt" }, inPark);
+  ["east", "west"].forEach(k => el("path", { d: polyD(PARK[k]), fill: "none", stroke: "url(#trees)", "stroke-width": 92, "stroke-linejoin": "round" }, tb));
+  features.push({ ...W.treebelt, node: tb });
+
+  // Areas (meadows, silent zone, thicket)
+  const areaG = el("g", { mask: innerMask() }, inPark);
+  const thicketD = spline(W.areas.find(a => a.kind === "thicket").pts);
+  W.areas.filter(a => a.kind !== "pool").forEach(a => {
+    // only the three main wildflower meadows can be hovered; the rest are drawn but stay quiet
+    const g = a.minor ? el("g", { "pointer-events": "none" }, areaG) : el("g", { class: "area hit", "data-id": a.id, tabindex: 0, role: "button", "aria-label": a.title }, areaG);
+    const d = spline(a.pts);
+    if (a.kind === "silent") el("path", { d: d + " " + thicketD, "fill-rule": "evenodd", fill: "url(#hush)", stroke: "#7d6cc4", "stroke-width": 4, "stroke-dasharray": "14 8" }, g);
+    else if (a.kind === "thicket") el("path", { d, fill: "url(#thicket)", stroke: "#2c5e2a", "stroke-width": 3 }, g);
+    else {
+      const edge = { A: "#c4528c", B: "#d2532c", C: "#4a72c9" }[a.pat];
+      el("path", { d, fill: `url(#meadow${a.pat})`, stroke: edge, "stroke-width": 3 }, g);
+    }
+    if (!a.minor) features.push({ ...a, node: g });
+  });
+
+  // Copses: decorative tree clumps filling open lawn
+  const copseG = el("g", { "pointer-events": "none" }, inPark);
+  [[1245,1185,3],[1400,920,3],[1355,960,2],[1700,560,3],[1780,640,2],[1500,520,2],[1235,820,2],[1830,700,2],[1655,820,2],[1120,960,2],[640,1290,3],[790,1288,2],[380,1120,2],[870,1080,2],[1540,1010,2],[1960,580,2]]
+    .forEach(([x, y, n], i) => {
+      for (let k = 0; k < n; k++) {
+        const a = (i * 2.3 + k * 2.1), r = 12 + (k % 2) * 4;
+        const cx = x + Math.cos(a) * 14 * k, cy = y + Math.sin(a) * 12 * k;
+        const tg = el("g", { class: "tree" }, copseG);
+        el("circle", { cx: cx + 2, cy: cy + 4, r, fill: "#3e7a35", opacity: .45 }, tg);
+        el("circle", { cx, cy, r, fill: "#5aa04a" }, tg);
+        el("circle", { cx: cx - r * .3, cy: cy - r * .3, r: r * .55, fill: "#78bd62" }, tg);
+      }
+    });
+
+  // Water: pool + stream (under paths, so paths become bridges)
+  const waterG = el("g", {}, inPark);
+  const pool = W.areas.find(a => a.kind === "pool");
+  const streamPts = meander(W.stream.way, 11, 64, 0.6);
+  const streamD = spline(streamPts, false);
+  const streamGeom = el("path", { d: streamD, fill: "none" }, defs);
+  const sg = el("g", { class: "area hit", "data-id": "stream", tabindex: 0, role: "button", "aria-label": W.stream.title }, waterG);
+  el("path", { d: streamD, fill: "none", stroke: "#5f9a43", "stroke-width": 30, "stroke-linecap": "round", "stroke-dasharray": "3 6", opacity: .8 }, sg);
+  el("path", { d: streamD, fill: "none", stroke: "#4d9ec6", "stroke-width": 20, "stroke-linecap": "round" }, sg);
+  el("path", { d: streamD, fill: "none", stroke: "#86cbe8", "stroke-width": 14, "stroke-linecap": "round" }, sg);
+  el("path", { d: streamD, fill: "none", stroke: "#d6f1fb", "stroke-width": 2.5, "stroke-dasharray": "10 26", "stroke-linecap": "round" }, sg);
+  features.push({ ...W.stream, node: sg });
+  const pg = el("g", { class: "area hit", "data-id": "pool", tabindex: 0, role: "button", "aria-label": pool.title, mask: innerMask() }, waterG);
+  const pd = spline(pool.pts);
+  el("path", { d: pd, fill: "none", stroke: "#5f9a43", "stroke-width": 18, "stroke-dasharray": "3 6", opacity: .85 }, pg);
+  el("path", { d: pd, fill: "#86cbe8", stroke: "#4d9ec6", "stroke-width": 5 }, pg);
+  [0.7, 0.4].forEach(k => {
+    const p = pool.pts.map(([x, y]) => [pool.lx + (x - pool.lx) * k, pool.ly + (y - pool.ly) * k]);
+    el("path", { d: spline(p), fill: "none", stroke: "#c4e8f6", "stroke-width": 2.5, "stroke-dasharray": "16 12" }, pg);
+  });
+  features.push({ ...pool, node: pg });
+
+  // Paths
+  const loopGeom = W.routes.map(r => { const p = el("path", { d: spline(r.pts), fill: "none" }, defs); return { r, p, s: sample(p, 6) }; });
+  function nearestOnLoops(x, y, west) {
+    let best = null;
+    loopGeom.forEach(({ r, s }) => {
+      if (west !== (r.id === "loop-hollow")) return;
+      s.forEach(([qx, qy]) => { const d = (qx - x) ** 2 + (qy - y) ** 2; if (!best || d < best.d) best = { d, x: qx, y: qy }; });
+    });
+    return best;
+  }
+  const spurs = [];
+  GATES.forEach(g => {
+    const q = nearestOnLoops(g[1], g[2], isWestGate(g[0])); if (!q) return;
+    const mid = [(g[1] + q.x) / 2 - (q.y - g[2]) * 0.25, (g[2] + q.y) / 2 + (q.x - g[1]) * 0.25];
+    spurs.push(spline([[g[1], g[2]], mid, [+q.x.toFixed(1), +q.y.toFixed(1)]], false));
+  });
+  const wanderD = []; // only the two main loops (plus gate links); more paths follow desire lines later
+  const routeD = W.routes.map(r => spline(r.pts));
+  const allPaths = [...spurs, ...wanderD, ...routeD];
+  const pathG = el("g", { "pointer-events": "none" }, inPark);
+  allPaths.forEach(d => el("path", { d, fill: "none", stroke: "#b49b6c", "stroke-width": 16, "stroke-linecap": "round" }, pathG));
+  allPaths.forEach(d => el("path", { d, fill: "none", stroke: "#f6ecd2", "stroke-width": 11, "stroke-linecap": "round" }, pathG));
+
+  // Bridges where any path crosses the stream
+  const streamS = sample(streamGeom, 4);
+  const bridgeG = el("g", { "pointer-events": "none" }, inPark);
+  const bridges = [];
+  [...allPaths].forEach(d => {
+    const p = el("path", { d, fill: "none" }, defs); const s = sample(p, 4);
+    for (let i = 1; i < s.length - 1; i++) {
+      const [x, y] = s[i];
+      let md = 1e9; for (const q of streamS) { const dd = (q[0] - x) ** 2 + (q[1] - y) ** 2; if (dd < md) md = dd; }
+      if (md < 16 && !bridges.some(b => (b.x - x) ** 2 + (b.y - y) ** 2 < 900)) {
+        const ang = Math.atan2(s[i + 1][1] - s[i - 1][1], s[i + 1][0] - s[i - 1][0]) * 180 / Math.PI;
+        bridges.push({ x, y, ang });
+      }
+    }
+    p.remove();
+  });
+  bridges.forEach(b => {
+    const g = el("g", { transform: `translate(${b.x.toFixed(1)} ${b.y.toFixed(1)}) rotate(${b.ang.toFixed(1)})` }, bridgeG);
+    drawRaised(g, ["M-20,0 L20,0"]);
+  });
+
+  // Route overlays (interactive)
+  const routeG = el("g", {}, inPark);
+  W.routes.forEach((r, i) => {
+    const d = routeD[i];
+    const g = el("g", { class: "area hit", "data-id": r.id, tabindex: 0, role: "button", "aria-label": r.title }, routeG);
+    el("path", { d, fill: "none", stroke: r.color, "stroke-width": 4.5, "stroke-dasharray": "2 10", "stroke-linecap": "round" }, g);
+    el("path", { d, fill: "none", stroke: "transparent", "stroke-width": 24 }, g);
+    const L = loopGeom[i].p.getTotalLength() * M_PER_UNIT;
+    const info = { m: Math.round(L / 10) * 10, min: Math.round(L / WALK_M_PER_MIN) };
+    features.push({ ...r, body: r.body(info), meta: `${info.min} min`, dist: info, node: g });
+  });
+
+  // Hedge rooms (world-scaled)
+  const roomG = el("g", {}, inPark);
+  const geomFor = key => {
+    if (key.startsWith("w")) { const p = el("path", { d: wanderD[+key.slice(1)], fill: "none" }, defs); return sample(p, 3); }
+    return sample(loopGeom.find(l => l.r.id === key).p, 3);
+  };
+  let _ps = null; const pathSamplesL = () => _ps ||= allPaths.flatMap(d => geomSamples(d, 5));
+  const placed = [];
+  const roomClear = (x, y) => {
+    const ring = [[x, y], ...Array.from({ length: 16 }, (_, k) => [x + 38 * Math.cos(k * Math.PI / 8), y + 38 * Math.sin(k * Math.PI / 8)])];
+    if (!ring.every(([px, py]) => inCore(px, py) && !inAnyArea(px, py))) return false;
+    if (pathSamplesL().some(([px, py]) => Math.hypot(px - x, py - y) < 44)) return false;
+    return !placed.some(([qx, qy]) => Math.hypot(qx - x, qy - y) < 90);
+  };
+  // candidate spots beside any path, nearest to each room's intended spot first
+  let _c = null; const candList = () => _c ||= allPaths.flatMap(d => { const S = geomSamples(d, 6); const out = [];
+    for (let j = 2; j < S.length - 2; j++) { const a = S[j - 2], b = S[j + 2], q = S[j];
+      let mx = -(b[1] - a[1]), my = b[0] - a[0]; const nl = Math.hypot(mx, my) || 1; mx /= nl; my /= nl;
+      out.push({ q, nx: mx, ny: my }, { q, nx: -mx, ny: -my }); }
+    return out; });
+  function drawRoom(p, nx, ny) {
+    const ang = Math.atan2(-ny, -nx) * 180 / Math.PI;
+    const g = el("g", { transform: `translate(${p.x} ${p.y})` }, roomG);
+    el("circle", { r: 30, fill: "#eef5d6" }, g);
+    const R = 30, C = 2 * Math.PI * R;
+    el("circle", { r: R, fill: "none", stroke: "#2f6b3a", "stroke-width": 13, "stroke-dasharray": `${C * 0.84} ${C * 0.16}`, transform: `rotate(${ang + 29})` }, g);
+    el("rect", { x: -9, y: -3, width: 18, height: 6, rx: 2, fill: "#8a6a3f", transform: `rotate(${ang + 270})` }, g);
+
+  }
+  const PRE_ROOMS = window.PRE_LAYOUT && PRE_LAYOUT.rooms;
+  W.points.filter(p => p.kind === "room").forEach((p, ri) => {
+    if (PRE_ROOMS && PRE_ROOMS[ri]) { const [x, y, nx0, ny0] = PRE_ROOMS[ri]; p.x = x; p.y = y; placed.push([x, y]); drawRoom(p, nx0, ny0); return; }
+    const ranked = candList().map(c => ({ ...c, d: Math.hypot(c.q[0] + c.nx * 48 - p.near[0], c.q[1] + c.ny * 48 - p.near[1]) })).sort((u, v) => u.d - v.d);
+    const best = ranked.find(c => roomClear(c.q[0] + c.nx * 48, c.q[1] + c.ny * 48)) || ranked[0];
+    const q = best.q, nx = best.nx, ny = best.ny;
+    p.x = +(q[0] + nx * 48).toFixed(1); p.y = +(q[1] + ny * 48).toFixed(1); placed.push([p.x, p.y]);
+    (window.__roomsOut ||= [])[ri] = [p.x, p.y, nx, ny];
+    drawRoom(p, nx, ny);
+  });
+
+  // Minor gates: small, non-interactive marks
+  const minorG = el("g", { "pointer-events": "none" }, markersG);
+  W.points.filter(p => p.kind === "minorgate").forEach(p => {
+    const g = el("g", { "data-x": p.x, "data-y": p.y, "data-minor": 1 }, minorG);
+    el("circle", { r: 5, fill: "#fff", stroke: "#e0533d", "stroke-width": 2.2 }, g);
+    el("circle", { r: 1.6, fill: "#e0533d" }, g);
+  });
+  // Interactive markers
+  W.points.filter(p => p.kind !== "minorgate").forEach(p => addMarker(p));
+  // Labels
+  [...W.areas, W.treebelt, W.stream].forEach(a => addLabel(a));
+}
+
+function drawPlaceholder(layer) {
+  const inPark = el("g", { "clip-path": "url(#parkClip)" }, world);
+  const zones = [
+    { id: "ph-a", pts: blobPts(1560, 640, 210, 130, -30, 4), lx: 1560, ly: 640 },
+    { id: "ph-b", pts: blobPts(1170, 1030, 70, 120, 20, 6), lx: 1170, ly: 1030 },
+    { id: "ph-c", pts: blobPts(680, 1170, 170, 70, 14, 9), lx: 680, ly: 1170 },
+  ];
+  zones.forEach((z, i) => {
+    const g = el("g", { class: "area hit", "data-id": z.id, tabindex: 0, role: "button", "aria-label": "Zone " + "ABC"[i] }, inPark);
+    el("path", { d: spline(z.pts), fill: layer.hex, "fill-opacity": .22, stroke: layer.hex, "stroke-width": 4, "stroke-dasharray": "12 8" }, g);
+    const f = { id: z.id, cat: "landscape", color: layer.hex, title: "Zone " + "ABC"[i], label: "Placeholder", lx: z.lx, ly: z.ly,
+      body: [["Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", "placeholder"]], node: g };
+    features.push(f); addLabel(f);
+  });
+}
+
+/* Marker icons */
+function iconFor(p, g) {
+  const c = CATS[p.cat].color;
+  if (p.kind === "turnstile") {
+    el("circle", { r: 12, fill: "#fff", stroke: c, "stroke-width": 3 }, g);
+    const s = el("g", { stroke: c, "stroke-width": 2.6, "stroke-linecap": "round" }, g);
+    [0, 120, 240].forEach(a => el("line", { x1: 0, y1: 0, x2: 0, y2: -7.5, transform: `rotate(${a})` }, s));
+    el("circle", { r: 2.4, fill: c }, g);
+    el("circle", { class: "ring", r: 17, fill: "none", stroke: "#22302a", "stroke-width": 2 }, g);
+    return;
+  }
+  if (p.kind === "room") {
+    el("circle", { r: 11, fill: c, stroke: "#fff", "stroke-width": 2.5 }, g);
+    const t = el("text", { y: 4, "text-anchor": "middle", "font-size": 11, "font-weight": 800, fill: "#fff", "font-family": "Nunito Sans, sans-serif" }, g);
+    t.textContent = p.n;
+    el("circle", { class: "ring", r: 16, fill: "none", stroke: "#22302a", "stroke-width": 2 }, g);
+    return;
+  }
+  el("rect", { x: -17, y: -17, width: 34, height: 34, rx: 9, fill: c, stroke: "#fff", "stroke-width": 3 }, g);
+  const s = el("g", { fill: "none", stroke: "#fff", "stroke-width": 2.4, "stroke-linejoin": "round", "stroke-linecap": "round" }, g);
+  if (p.kind === "lodge") {
+    el("path", { d: "M-9,0 L0,-9 L9,0 M-6,-2 V8 H6 V-2" }, s);
+    el("path", { d: "M-2,8 V3 H2 V8" }, s);
+  } else if (p.kind === "cafe") {
+    el("path", { d: "M-8,-3 H5 V3 A6,6 0 0 1 -1,9 H-2 A6,6 0 0 1 -8,3 Z" }, s);
+    el("path", { d: "M5,-1 H7 A3,3 0 0 1 7,5 H5" }, s);
+    el("path", { d: "M-4,-8 Q-2,-10 -4,-12 M0,-8 Q2,-10 0,-12" }, s);
+  } else glyph(p.kind, s);
+  el("rect", { class: "ring", x: -22, y: -22, width: 44, height: 44, rx: 12, fill: "none", stroke: "#22302a", "stroke-width": 2 }, g);
+}
+function addMarker(p) {
+  const g = el("g", { class: "mk hit", "data-id": p.id, tabindex: 0, role: "button", "aria-label": p.title }, markersG);
+  g.dataset.x = p.x; g.dataset.y = p.y;
+  iconFor(p, g);
+  features.push({ ...p, node: g, lx: p.x, ly: p.y });
+}
+function addLabel(a) {
+  const g = el("g", { class: "lbl", "data-for": a.id, "pointer-events": "none" }, markersG);
+  g.dataset.x = a.lx; g.dataset.y = a.ly; g.dataset.lbl = 1;
+  const t = el("text", { "text-anchor": "middle", y: 5, "font-family": "Titan One, sans-serif", "font-weight": 400, "font-size": a.small ? 13 : 15, fill: "#2c4a1b" });
+  t.textContent = a.title;
+  g.appendChild(t);
+  requestAnimationFrame(() => {
+    const bb = t.getBBox();
+    const r = el("rect", { x: bb.x - 9, y: bb.y - 4, width: bb.width + 18, height: bb.height + 8, rx: (bb.height + 8) / 2, fill: "#fdf2d0", stroke: "#2c4a1b", "stroke-width": 2.5 });
+    g.insertBefore(r, t);
+  });
+}
+
+/* ---------- View: pan & zoom ---------- */
+let vb = { ...WORLD };
+const sized = () => { const r = svg.getBoundingClientRect(); return r.width > 2 && r.height > 2; };
+const validView = () => [vb.x, vb.y, vb.w, vb.h].every(Number.isFinite) && vb.w > 0 && vb.h > 0;
+let needsFit = true;
+function upp() { const r = svg.getBoundingClientRect(); return Math.max(vb.w / r.width, vb.h / r.height); }
+function zoomLevel() { return WORLD.w / vb.w; }
+function applyView() {
+  if (!sized()) { needsFit = true; return; }
+  if (!validView()) { needsFit = true; fit(); return; }
+  svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  const u = upp(), z = zoomLevel();
+  const sMk = u * Math.pow(z, 0.18), sLb = u * Math.pow(z, 0.32), sMin = u * Math.pow(z, 0.45);
+  markersG.querySelectorAll("g[data-x]").forEach(g => {
+    const s = g.dataset.lbl ? sLb : g.dataset.minor ? sMin : sMk;
+    g.setAttribute("transform", `translate(${g.dataset.x} ${g.dataset.y}) scale(${s.toFixed(4)})`);
+  });
+  const mPerPx = u * M_PER_UNIT;
+  const m = [10, 20, 25, 50, 100, 200, 250, 500].find(n => n / mPerPx >= 70) || 500;
+  document.getElementById("scale-bar").style.width = (m / mPerPx).toFixed(0) + "px";
+  document.getElementById("scale-lbl").textContent = m + " m";
+  if (pinned) placePopAt(pinned.feature, pinned.anchor);
+  else if (hoverF) placePopAt(hoverF, hoverAnchor);
+}
+function clampView() {
+  if (!sized()) { needsFit = true; return; }
+  if (!validView()) { needsFit = true; return; }
+  const minW = WORLD.w / 6, maxW = WORLD.w * 1.15;
+  const r = svg.getBoundingClientRect(); const ar = r.height / r.width || 0.6;
+  vb.w = Math.min(maxW, Math.max(minW, vb.w)); vb.h = vb.w * ar;
+  const cx = Math.min(WORLD.x + WORLD.w, Math.max(WORLD.x, vb.x + vb.w / 2));
+  const cy = Math.min(WORLD.y + WORLD.h, Math.max(WORLD.y, vb.y + vb.h / 2));
+  vb.x = cx - vb.w / 2; vb.y = cy - vb.h / 2;
+}
+function fitW() { const r = svg.getBoundingClientRect(); const ar = r.height / r.width; return WORLD.h / WORLD.w > ar ? WORLD.h / ar : WORLD.w; }
+function fit() {
+  if (!sized()) { needsFit = true; return; }
+  needsFit = false;
+  const r = svg.getBoundingClientRect(); const ar = r.height / r.width;
+  vb.w = fitW(); vb.h = vb.w * ar;
+  vb.x = WORLD.x + WORLD.w / 2 - vb.w / 2; vb.y = WORLD.y + WORLD.h / 2 - vb.h / 2;
+  applyView();
+}
+function toWorld(cx, cy) {
+  const r = svg.getBoundingClientRect(); const u = upp();
+  const offX = (r.width * u - vb.w) / 2, offY = (r.height * u - vb.h) / 2;
+  return { x: vb.x - offX + (cx - r.left) * u, y: vb.y - offY + (cy - r.top) * u };
+}
+function toScreen(x, y) {
+  const r = svg.getBoundingClientRect(); const u = upp();
+  const offX = (r.width * u - vb.w) / 2, offY = (r.height * u - vb.h) / 2;
+  return { x: (x - vb.x + offX) / u, y: (y - vb.y + offY) / u };
+}
+function zoomAt(factor, cx, cy) {
+  const p = toWorld(cx, cy);
+  const nw = Math.min(WORLD.w * 1.15, Math.max(WORLD.w / 6, vb.w * factor));
+  const k = nw / vb.w;
+  vb.x = p.x - (p.x - vb.x) * k; vb.y = p.y - (p.y - vb.y) * k; vb.w = nw; vb.h *= k;
+  clampView(); applyView();
+}
+let anim = null;
+function flyTo(x, y, targetW) {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const r = svg.getBoundingClientRect(); const ar = r.height / r.width;
+  const from = { ...vb }, tw = targetW, th = tw * ar;
+  const to = { x: x - tw / 2, y: y - th / 2, w: tw, h: th };
+  if (reduce) { vb = to; clampView(); applyView(); return Promise.resolve(); }
+  cancelAnimationFrame(anim);
+  return new Promise(res => {
+    const t0 = performance.now(), D = 520;
+    const step = now => {
+      const t = Math.min(1, (now - t0) / D), e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      vb = { x: from.x + (to.x - from.x) * e, y: from.y + (to.y - from.y) * e, w: from.w + (to.w - from.w) * e, h: from.h + (to.h - from.h) * e };
+      applyView();
+      if (t < 1) anim = requestAnimationFrame(step); else { clampView(); applyView(); res(); }
+    };
+    anim = requestAnimationFrame(step);
+  });
+}
+
+const ptrs = new Map(); let dragMoved = 0, pinch0 = null;
+stage.addEventListener("pointerdown", e => {
+  if (e.target.closest(".zoombar, .layers, .pop")) return;
+  stage.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); dragMoved = 0;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = { d: Math.hypot(a.x - b.x, a.y - b.y), w: vb.w }; }
+});
+stage.addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const prev = ptrs.get(e.pointerId); const cur = { x: e.clientX, y: e.clientY };
+  ptrs.set(e.pointerId, cur);
+  if (ptrs.size === 1) {
+    const u = upp(); const dx = cur.x - prev.x, dy = cur.y - prev.y;
+    dragMoved += Math.abs(dx) + Math.abs(dy);
+    if (dragMoved > 4) { stage.classList.add("dragging"); hideHoverNow(); }
+    vb.x -= dx * u; vb.y -= dy * u; clampView(); applyView();
+  } else if (ptrs.size === 2 && pinch0) {
+    const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y);
+    dragMoved += 10;
+    zoomAt((pinch0.w * pinch0.d / d) / vb.w, (a.x + b.x) / 2, (a.y + b.y) / 2);
+  }
+});
+["pointerup", "pointercancel"].forEach(t => stage.addEventListener(t, e => {
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = null;
+  stage.classList.remove("dragging");
+}));
+stage.addEventListener("wheel", e => { if (e.target.closest(".pop")) return; e.preventDefault(); zoomAt(Math.exp(e.deltaY * 0.0016), e.clientX, e.clientY); }, { passive: false });
+stage.addEventListener("dblclick", e => { if (e.target.closest(".zoombar, .layers, .pop")) return; zoomAt(0.5, e.clientX, e.clientY); });
+stage.addEventListener("keydown", e => {
+  if (e.target !== stage) { if (e.key === "Escape") { unpin(); stage.focus(); } return; }
+  const r = svg.getBoundingClientRect(); const cx = r.left + r.width / 2, cy = r.top + r.height / 2; const step = vb.w * 0.08;
+  const k = e.key;
+  if (k === "+" || k === "=") zoomAt(0.7, cx, cy);
+  else if (k === "-" || k === "_") zoomAt(1 / 0.7, cx, cy);
+  else if (k === "ArrowLeft") { vb.x -= step; clampView(); applyView(); }
+  else if (k === "ArrowRight") { vb.x += step; clampView(); applyView(); }
+  else if (k === "ArrowUp") { vb.y -= step; clampView(); applyView(); }
+  else if (k === "ArrowDown") { vb.y += step; clampView(); applyView(); }
+  else if (k === "Escape") unpin();
+  else return;
+  e.preventDefault();
+});
+const centre = () => { const r = svg.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+document.getElementById("zin").onclick = () => zoomAt(0.65, ...centre());
+document.getElementById("zout").onclick = () => zoomAt(1 / 0.65, ...centre());
+document.getElementById("zreset").onclick = () => { unpin(); flyTo(WORLD.x + WORLD.w / 2, WORLD.y + WORLD.h / 2, fitW()); };
+new ResizeObserver(() => { if (!sized()) return; if (needsFit || !validView()) fit(); else { clampView(); applyView(); } }).observe(svg);
+window.addEventListener("load", () => { if (needsFit || !validView()) fit(); });
+
+/* ---------- Pop-ups (hover, then move into them to click a source) ---------- */
+const pop = document.getElementById("pop");
+let pinned = null, hoverF = null, hoverAnchor = null, hideTimer = null;
+function fill(f) {
+  const cat = CATS[f.cat] || { name: "Zone", color: currentLayer.hex };
+  pop.style.setProperty("--c", f.color || cat.color);
+  document.getElementById("pop-cat").textContent = f.label ? `${cat.name} · ${f.label}` : cat.name;
+  document.getElementById("pop-t").textContent = f.title;
+  const b = document.getElementById("pop-b"); b.innerHTML = "";
+  // Pop-up text: the user's own text from POPUP_TEXT if there is any, otherwise filler that keeps the sources
+  const srcKeys = [...new Set((f.body || []).map(x => x[1]).filter(k => k && SRC[k]))];
+  const body = (window.POPUP_TEXT && POPUP_TEXT[f.id]) || [[`${f.title} pop-up filler text`, ...srcKeys]];
+  body.forEach(([text, ...keys]) => {
+    const p = document.createElement("p"); p.textContent = f.dist ? text.replace(/\{m\}/g, f.dist.m).replace(/\{min\}/g, f.dist.min) : text;
+    keys.forEach(key => {
+      if (key === "placeholder") { p.append(" ("); const s = document.createElement("span"); s.className = "src"; s.textContent = "Source"; p.append(s, ")"); }
+      else if (key && SRC[key]) {
+        const a = document.createElement("a");
+        a.href = SRC[key].url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "Source";
+        a.title = SRC[key].cite; a.setAttribute("aria-label", "Source: " + SRC[key].cite + " (opens in a new tab)");
+        p.append(" (", a, ")");
+      }
+    });
+    b.appendChild(p);
+  });
+}
+// anchor: world point the note is attached to
+function placePopAt(f, anchor) {
+  const sr = stage.getBoundingClientRect(), r = svg.getBoundingClientRect();
+  const sp = toScreen(anchor.x, anchor.y);
+  const sx = sp.x + r.left - sr.left, sy = sp.y + r.top - sr.top;
+  const pw = pop.offsetWidth, ph = pop.offsetHeight, gap = 16;
+  let left = sx + gap; if (left + pw > sr.width - 8) left = sx - gap - pw;
+  let top = sy - ph / 2;
+  left = Math.max(8, Math.min(left, sr.width - pw - 8)); top = Math.max(8, Math.min(top, sr.height - ph - 8));
+  pop.style.left = left + "px"; pop.style.top = top + "px";
+}
+function anchorFor(f, evt) {
+  if (f.node.classList.contains("mk") || !evt) return { x: f.lx ?? f.x, y: f.ly ?? f.y };
+  return toWorld(evt.clientX, evt.clientY);
+}
+function setLabel(f, on) { if (f) markersG.querySelectorAll(`.lbl[data-for="${CSS.escape(f.id)}"]`).forEach(l => l.classList.toggle("on", on)); }
+function showHover(f, evt) {
+  clearTimeout(hideTimer);
+  if (pinned) return;
+  if (hoverF === f) return;
+  if (hoverF) { hoverF.node.classList.remove("hover"); legendHL(hoverF.id, false); setLabel(hoverF, false); }
+  hoverF = f; hoverAnchor = anchorFor(f, evt); setLabel(f, true);
+  fill(f); pop.classList.add("show"); placePopAt(f, hoverAnchor);
+  f.node.classList.add("hover"); legendHL(f.id, true);
+}
+function hideHoverNow() {
+  clearTimeout(hideTimer);
+  if (hoverF) { hoverF.node.classList.remove("hover"); legendHL(hoverF.id, false); if (!pinned || pinned.feature !== hoverF) setLabel(hoverF, false); }
+  hoverF = null; if (!pinned) pop.classList.remove("show");
+}
+const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(hideHoverNow, 280); };
+pop.addEventListener("pointerenter", () => clearTimeout(hideTimer));
+pop.addEventListener("pointerleave", () => { if (!pinned) hideSoon(); });
+function pin(f, evt) {
+  hideHoverNow(); unpin(true);
+  const anchor = anchorFor(f, evt);
+  pinned = { feature: f, anchor }; fill(f); pop.classList.add("show", "pinned"); f.node.classList.add("hover"); setLabel(f, true);
+  placePopAt(f, anchor);
+}
+function unpin(silent) {
+  if (!pinned) return;
+  pinned.feature.node.classList.remove("hover"); setLabel(pinned.feature, false); pinned = null; pop.classList.remove("pinned");
+  if (!silent) pop.classList.remove("show");
+}
+document.getElementById("pop-x").onclick = () => unpin();
+function featureFromEvent(e) { const n = e.target.closest(".hit"); return n ? features.find(f => f.node === n) || null : null; }
+svg.addEventListener("pointerover", e => { if (ptrs.size) return; const f = featureFromEvent(e); if (f) showHover(f, e); });
+svg.addEventListener("pointerout", e => {
+  const f = featureFromEvent(e);
+  if (f && f === hoverF && !(e.relatedTarget && f.node.contains(e.relatedTarget))) hideSoon();
+});
+svg.addEventListener("click", e => {
+  if (dragMoved > 4) return;
+  const f = featureFromEvent(e);
+  if (f) { e.stopPropagation(); if (pinned && pinned.feature === f) unpin(); else pin(f, e); } else unpin();
+});
+svg.addEventListener("focusin", e => { const f = featureFromEvent(e); if (f) pin(f); });
+svg.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.closest(".hit")) { e.preventDefault(); const f = featureFromEvent(e); if (f) pin(f); } });
+
+/* ---------- Panel (key) ---------- */
+const panelBody = document.getElementById("panel-body");
+function legendHL(id, on) { const b = panelBody.querySelector(`[data-fid="${CSS.escape(id)}"]`); if (b) b.classList.toggle("hl", on); }
+/* Legend swatch: a small sample of how the feature actually looks on the map */
+function swatchFor(f) {
+  const NS = "http://www.w3.org/2000/svg", mkS = (vb) => { const s = document.createElementNS(NS, "svg"); s.setAttribute("class", "sw"); s.setAttribute("viewBox", vb); s.setAttribute("aria-hidden", "true"); return s; };
+  const paint = v => v && v !== "none" && v !== "transparent";
+  try {
+    if (f.node.classList.contains("mk")) {
+      const bb = f.node.getBBox(); if (!bb.width) return null;
+      const m = Math.max(bb.width, bb.height) + 3, s = mkS(`${bb.x + bb.width / 2 - m / 2} ${bb.y + bb.height / 2 - m / 2} ${m} ${m}`);
+      [...f.node.children].forEach(c => { if (!c.classList.contains("ring")) s.appendChild(c.cloneNode(true)); });
+      return s;
+    }
+    const s = mkS("0 0 60 60"), shapes = [...f.node.querySelectorAll("path,rect,circle,ellipse,polygon")];
+    const wave = "M5,44 C18,10 36,52 55,16";
+    const line = (stroke, w, extra = {}) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", wave); p.setAttribute("fill", "none"); p.setAttribute("stroke", stroke); p.setAttribute("stroke-width", w); p.setAttribute("stroke-linecap", extra.cap || "round"); if (extra.dash) p.setAttribute("stroke-dasharray", extra.dash); if (extra.op) p.setAttribute("opacity", extra.op); s.appendChild(p); };
+    if (f.kind === "loop") { line("#b49b6c", 18); line("#f6ecd2", 12); line(f.color || "#b4532a", 5, { dash: "1 7" }); return s; }
+    if (f.swatch && f.swatch !== "line") { const r = document.createElementNS(NS, "rect"); Object.entries({ x: 4, y: 4, width: 52, height: 52, rx: 12, fill: f.swatch.fill, stroke: f.swatch.stroke, "stroke-width": 6 }).forEach(([k, v]) => r.setAttribute(k, v)); s.appendChild(r); return s; }
+    const area = shapes.find(e => paint(e.getAttribute("fill")) && e.getAttribute("opacity") !== "0" && !e.getAttribute("transform"));
+    const pat = shapes.find(e => (e.getAttribute("stroke") || "").startsWith("url("));
+    if ((area || pat) && f.swatch !== "line") {
+      const r = document.createElementNS(NS, "rect");
+      Object.entries({ x: 4, y: 4, width: 52, height: 52, rx: 12 }).forEach(([k, v]) => r.setAttribute(k, v));
+      r.setAttribute("fill", area ? area.getAttribute("fill") : pat.getAttribute("stroke"));
+      let st = area && paint(area.getAttribute("stroke")) ? area : shapes.find(e => e !== area && paint(e.getAttribute("stroke")) && e.getAttribute("fill") === "none" && !(e.getAttribute("stroke") || "").startsWith("url("));
+      r.setAttribute("stroke", st ? st.getAttribute("stroke") : "#2c4a1b");
+      r.setAttribute("stroke-width", st && st.getAttribute("stroke-dasharray") ? 5 : 4);
+      if (st && st.getAttribute("stroke-dasharray")) { r.setAttribute("stroke-dasharray", st.getAttribute("stroke-dasharray")); r.setAttribute("stroke-linecap", "round"); }
+      s.appendChild(r); return s;
+    }
+    const seen = new Set();
+    shapes.filter(e => paint(e.getAttribute("stroke")) && e.getAttribute("fill") === "none")
+      .sort((x, y) => (+y.getAttribute("stroke-width") || 3) - (+x.getAttribute("stroke-width") || 3)).forEach(e => {
+      const w = +e.getAttribute("stroke-width") || 3, key = e.getAttribute("stroke") + e.getAttribute("stroke-dasharray") + e.getAttribute("opacity");
+      if (seen.has(key) || seen.size >= 4) return; seen.add(key);
+      line(e.getAttribute("stroke"), Math.min(22, w * 0.9), { dash: e.getAttribute("stroke-dasharray"), op: e.getAttribute("opacity"), cap: e.getAttribute("stroke-linecap") || "butt" });
+    });
+    return seen.size ? s : null;
+  } catch (err) { return null; }
+}
+function buildPanel(layer) {
+  document.getElementById("panel-tag").textContent = layer.tag;
+  document.getElementById("panel-h").textContent = layer.name;
+  document.getElementById("panel-p").textContent = layer.blurb;
+  document.getElementById("panel").style.setProperty("--c", layer.color);
+  panelBody.innerHTML = "";
+  if (!DRAW[layer.id]) {
+    const n = document.createElement("div"); n.className = "placeholder-note";
+    n.textContent = "Scenario not drawn yet. The three dashed zones are placeholders: lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+    panelBody.appendChild(n);
+  }
+  (layer.order || ["access", "rooms", "amenity", "water", "landscape", "routes"]).forEach(cat => {
+    const items = features.filter(f => f.cat === cat);
+    if (!items.length) return;
+    const sec = document.createElement("section"); sec.className = "group";
+    const h = document.createElement("div"); h.className = "group-h";
+    const id = "show-" + cat;
+    h.innerHTML = `<span>${CATS[cat] && DRAW[layer.id] ? CATS[cat].name : "Zones"}</span><label for="${id}"><input type="checkbox" id="${id}" ${hiddenCats.has(cat) ? "" : "checked"}> Show</label>`;
+    sec.appendChild(h);
+    const ul = document.createElement("ul"); ul.className = "items";
+    let meadowsShown = false; const groupsShown = new Set();
+    items.forEach(f => {
+      if (f.kind === "meadow") {
+        if (meadowsShown) return; meadowsShown = true;
+      }
+      if (f.group) { if (groupsShown.has(f.group)) return; groupsShown.add(f.group); }
+      const li = document.createElement("li");
+      const color = f.color || (CATS[f.cat] ? CATS[f.cat].color : layer.hex);
+      let chipCls = "chip", chipTxt = "", style = `--k:${color}`;
+      if (f.kind === "loop") chipCls = "chip line";
+      else if (f.node.classList.contains("mk") && f.kind !== "room" && f.kind !== "turnstile") chipCls = "chip sq";
+      else if (f.kind === "room") chipTxt = f.n;
+      else if (f.kind === "turnstile") { style = `--k:#fff;color:${color};box-shadow:0 0 0 2px ${color}`; chipTxt = "⟳"; }
+      const gcount = f.group ? items.filter(x => x.group === f.group).length : 0;
+      const name = f.kind === "meadow" ? "Wildflower meadows" : f.group ? f.group : f.title;
+      const meta = f.kind === "meadow" ? `${WB.areas.filter(x => x.kind === "meadow").length} meadows` : f.kind === "turnstile" ? "Main gate" : f.group && gcount > 1 ? `${gcount}` : (f.meta || "");
+      li.innerHTML = `<button type="button" data-fid="${f.id}"><span class="${chipCls}" style="${style}">${chipTxt}</span>${name}${meta ? `<span class="meta">${meta}</span>` : ""}</button>`;
+      if (f.kind !== "room" && f.kind !== "turnstile") { const sw = swatchFor(f); if (sw) li.querySelector(".chip").replaceWith(sw); }
+      const b = li.querySelector("button");
+      b.onclick = async () => {
+        const w = f.kind === "loop" || f.kind === "treebelt" || f.kind === "stream" ? WORLD.w * 0.8 : f.kind === "meadow" ? fitW() : WORLD.w / 3.2;
+        let cx = f.lx ?? f.x, cy = f.ly ?? f.y;
+        if (cx == null) { const bb = f.node.getBBox(); cx = bb.x + bb.width / 2; cy = bb.y + bb.height / 2; }
+        await flyTo(cx, cy, f.group && gcount > 1 ? fitW() : w);
+        pin(f);
+      };
+      b.onmouseenter = () => { f.node.classList.add("hover"); setLabel(f, true); };
+      b.onmouseleave = () => { if (!pinned || pinned.feature !== f) { f.node.classList.remove("hover"); setLabel(f, false); } };
+      ul.appendChild(li);
+      if (cat === "access" && f.kind === "turnstile" && items.filter(x => x.kind === "turnstile").indexOf(f) === MAIN_GATES.length - 1) {
+        const li2 = document.createElement("li");
+        li2.innerHTML = `<div class="note-row"><span class="mini-gate"></span>${GATES.length - MAIN_GATES.length} other turnstile gates</div>`;
+        ul.appendChild(li2);
+      }
+    });
+    sec.appendChild(ul);
+    sec.querySelector("input").onchange = e => {
+      if (e.target.checked) hiddenCats.delete(cat); else hiddenCats.add(cat);
+      applyCatVisibility();
+    };
+    panelBody.appendChild(sec);
+  });
+}
+function applyCatVisibility() {
+  features.forEach(f => {
+    const hide = hiddenCats.has(f.cat);
+    f.node.classList.toggle("cat-hidden", hide);
+    markersG.querySelectorAll(`.lbl[data-for="${CSS.escape(f.id)}"]`).forEach(l => l.classList.toggle("cat-hidden", hide));
+  });
+  markersG.querySelectorAll("g[data-minor]").forEach(g => g.classList.toggle("cat-hidden", hiddenCats.has("access")));
+  if (pinned && hiddenCats.has(pinned.feature.cat)) unpin();
+}
+
+/* ---------- Layer switcher ---------- */
+function thumbSVG(layer) {
+  return `<svg viewBox="300 220 1780 1150" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <rect x="0" y="0" width="2400" height="1600" fill="#f8dfae"/>
+    <path d="${polyD(PARK.east)} ${polyD(PARK.west)}" fill="${layer.hex}" fill-opacity=".85" stroke="#2c4a1b" stroke-width="22"/></svg>`;
+}
+const tray = document.getElementById("layer-tray");
+const toggleBtn = document.getElementById("layer-toggle");
+function renderSwitcher() {
+  const cur = currentLayer;
+  toggleBtn.style.setProperty("--c", cur.color);
+  toggleBtn.innerHTML = `${thumbSVG(cur)}<span>${cur.short}</span>`;
+  toggleBtn.setAttribute("aria-label", `Scenarios. Showing ${cur.name}. Opens the list of scenarios.`);
+  if (!toggleBtn.parentElement.querySelector(".lbl-layers")) {
+    const l = document.createElement("span"); l.className = "lbl-layers"; l.textContent = "Scenarios"; toggleBtn.parentElement.appendChild(l);
+  }
+  tray.innerHTML = "";
+  LAYERS.forEach(L => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "layer-btn";
+    b.style.setProperty("--c", L.color);
+    b.setAttribute("aria-pressed", L === currentLayer ? "true" : "false");
+    b.innerHTML = `${thumbSVG(L)}<span>${L.short}</span>`;
+    b.onclick = () => { setLayer(L); closeTray(); };
+    tray.appendChild(b);
+  });
+}
+function openTray() { tray.hidden = false; toggleBtn.setAttribute("aria-expanded", "true"); }
+function closeTray() { tray.hidden = true; toggleBtn.setAttribute("aria-expanded", "false"); }
+toggleBtn.onclick = e => { e.stopPropagation(); tray.hidden ? openTray() : closeTray(); };
+document.addEventListener("click", e => { if (!e.target.closest("#layers")) closeTray(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !tray.hidden) { closeTray(); toggleBtn.focus(); } });
+
+function setLayer(layer, fromHash) {
+  currentLayer = layer; features = []; unpin(); hideHoverNow();
+  drawBase(layer);
+  try { (DRAW[layer.id] || (() => drawPlaceholder(layer)))(); declutter(); }
+  catch (err) { console.error("Layer drawing failed", err); }
+  buildPanel(layer); applyCatVisibility();
+  const c = document.getElementById("cartouche");
+  c.style.setProperty("--c", layer.color);
+  document.getElementById("cart-t1").textContent = layer.name;
+  document.getElementById("cart-t2").textContent = layer.sub;
+  renderSwitcher(); applyView();
+  if (!fromHash && location.hash !== "#" + layer.id) history.replaceState(null, "", "#" + layer.id);
+}
+const fromHash = () => LAYERS.find(l => l.id === location.hash.slice(1)) || LAYERS[0];
+window.addEventListener("hashchange", () => { const L = fromHash(); if (L !== currentLayer) setLayer(L, true); });
+
+/* ================= Scenarios 2–4 ================= */
+Object.assign(SRC, {
+  kowarik:  { cite: "Kowarik & Langer (2005), Natur-Park Südgelände, in Wild Urban Woodlands (Springer)", url: "https://doi.org/10.1007/b138211" },
+  bonthoux: { cite: "Bonthoux et al. (2014), Landscape and Urban Planning", url: "https://doi.org/10.1016/j.landurbplan.2014.08.010" },
+  hewitt:   { cite: "Hewitt (2025), A Bombsite Flora, Architecture and Culture (on Salisbury's 1943 study)", url: "https://doi.org/10.1080/20507828.2025.2547510" },
+  nassauer: { cite: "Nassauer (1995), Messy Ecosystems, Orderly Frames, Landscape Journal", url: "https://doi.org/10.3368/lj.14.2.161" },
+  nnss:     { cite: "GB Non-native Species Secretariat (2019), Ring-necked parakeet (Psittacula krameri)", url: "https://nonnativespecies.org/non-native-species/information-portal/view/2886" },
+  songbird: { cite: "SongBird Survival (n.d.), The growth of parakeets: exploring their numbers and impacts", url: "https://www.songbird-survival.org.uk/post/blog-the-growth-of-parakeets-exploring-their-numbers-and-impacts" },
+  pigeons:  { cite: "Haag-Wackernagel & Geigenfeind (2008), European Journal of Wildlife Research", url: "https://doi.org/10.1007/s10344-008-0201-z" },
+  scott:    { cite: "Scott et al. (2014), PLoS ONE", url: "https://doi.org/10.1371/journal.pone.0099059" },
+  davidson: { cite: "Davidson (2014), Marine and Freshwater Research", url: "https://doi.org/10.1071/MF14173" },
+  brazier:  { cite: "Brazier et al. (2021), WIREs Water", url: "https://doi.org/10.1002/wat2.1494" },
+  ealing:   { cite: "Mayor of London (2023), beavers released in Ealing", url: "https://london.gov.uk/mayor-brings-back-beavers-ealing-bees-bexley-and-bats-barnes-he-sets-out-plans-rewild-london" },
+  enfield:  { cite: "Enfield Council (2023), London's first beaver project", url: "https://www.enfield.gov.uk/news-and-events/2023/03/londons-first-beaver-project-gets-new-dam-dwellers" },
+  soga18b:  { cite: "Soga & Gaston (2018), Frontiers in Ecology and the Environment", url: "https://doi.org/10.1002/fee.1794" },
+  gla:      { cite: "Greater London Authority (2023), Rewilding London", url: "https://www.london.gov.uk/london-rewilding-taskforce" },
+  he:       { cite: "Historic England (n.d.), Victoria Park, list entry 1000178", url: "https://historicengland.org.uk/listing/the-list/list-entry/1000178" },
+  edmondson:{ cite: "Edmondson et al. (2020), Nature Food", url: "https://doi.org/10.1038/s43016-020-0045-6" },
+  clark:    { cite: "Clark & Nicholas (2013), Landscape Ecology", url: "https://doi.org/10.1007/s10980-013-9903-z" },
+  soga17:   { cite: "Soga, Gaston & Yamaura (2017), Preventive Medicine Reports", url: "https://doi.org/10.1016/j.pmedr.2016.11.007" },
+  entwistle:{ cite: "Entwistle et al. (2019), Environment International", url: "https://core.ac.uk/download/196577255.pdf" },
+  ostrom:   { cite: "Ostrom (1990/2015), Governing the Commons, Cambridge University Press", url: "https://doi.org/10.1017/CBO9781316423936" },
+});
+
+Object.assign(CATS, {
+  f_people:   { name: "Walkway & trails", color: "#b4532a" },
+  f_habitat:  { name: "Wasteland habitats", color: "#8a6a12" },
+  f_plots:    { name: "Succession plots", color: "#48752c" },
+  f_wildlife: { name: "City wildlife", color: "#1f7a78" },
+  r_beaver:   { name: "Beaver wetland", color: "#7a4a24" },
+  r_wet:      { name: "Water & fen", color: "#1f7a78" },
+  r_visit:    { name: "Visiting & memory", color: "#b4532a" },
+  g_grow:     { name: "Growing", color: "#8a6a12" },
+  g_trees:    { name: "Fruit trees", color: "#b4532a" },
+  g_people:   { name: "Community", color: "#48752c" },
+  g_routes:   { name: "Walks", color: "#3b78d4" },
+});
+LAYERS.find(l => l.id === "well-being").order = ["access", "rooms", "amenity", "water", "landscape", "routes"];
+LAYERS.find(l => l.id === "fourth-nature").order = ["f_people", "f_habitat", "f_plots", "f_wildlife"];
+LAYERS.find(l => l.id === "restoration").order = ["r_beaver", "r_wet", "r_visit"];
+LAYERS.find(l => l.id === "forager").order = ["g_grow", "g_trees", "g_people", "g_routes"];
+const GROUND = { "well-being": "url(#grass)", "fourth-nature": "url(#rough)", "restoration": "url(#fenground)", "forager": "url(#grass)" };
+
+function scenarioDefs() {
+  defs.insertAdjacentHTML("beforeend", `
+    <pattern id="rough" width="30" height="30" patternUnits="userSpaceOnUse">
+      <rect width="30" height="30" fill="#c9c784"/>
+      <path d="M4 9 l2 -6 l2 6 M18 22 l2 -6 l2 6 M24 8 l1.5 -5 l1.5 5" stroke="#9aa45a" stroke-width="1.6" fill="none"/>
+      <circle cx="12" cy="15" r="1.6" fill="#e2c35a"/><circle cx="26" cy="27" r="1.4" fill="#fdf2d0"/><circle cx="6" cy="25" r="1.3" fill="#b6a36a"/>
+    </pattern>
+    <pattern id="birch" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="#8fae5a"/>
+      <circle cx="9" cy="10" r="9" fill="#7a9e48"/><circle cx="9" cy="8" r="6" fill="#a9c76a"/>
+      <circle cx="29" cy="27" r="10" fill="#6f9440"/><circle cx="28" cy="25" r="6.5" fill="#b6d07a"/>
+      <rect x="20" y="4" width="2" height="9" fill="#f2efe4"/><rect x="5" y="28" width="2" height="9" fill="#f2efe4"/>
+    </pattern>
+    <pattern id="rubbleA" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="#d6bb94"/>
+      <rect x="2" y="3" width="8" height="5" rx="1.5" fill="#b4532a" transform="rotate(15 6 5)"/><rect x="13" y="12" width="9" height="5" rx="1.5" fill="#a8875f"/>
+      <rect x="4" y="16" width="6" height="4" rx="1" fill="#8f6f50"/><circle cx="18" cy="5" r="2.4" fill="#c9a77c"/>
+    </pattern>
+    <pattern id="rubbleB" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="#c9ad84"/>
+      <rect x="3" y="4" width="7" height="5" rx="1.5" fill="#9b4a26"/><rect x="14" y="13" width="8" height="5" rx="1.5" fill="#8f6f50"/>
+      <path d="M16 3 l1.5 -3 l1.5 3 M5 20 l1.5 -4 l1.5 4" stroke="#6f9a3a" stroke-width="1.5" fill="none"/><circle cx="8" cy="13" r="2" fill="#e2589b"/>
+    </pattern>
+    <pattern id="herbs" width="22" height="22" patternUnits="userSpaceOnUse">
+      <rect width="22" height="22" fill="#c7c47a"/>
+      <path d="M5 18 v-9 M15 20 v-11" stroke="#5f8a3a" stroke-width="1.6"/>
+      <circle cx="5" cy="8" r="2.4" fill="#e2589b"/><circle cx="15" cy="8" r="2.4" fill="#e2589b"/><circle cx="10" cy="4" r="1.8" fill="#f2c230"/>
+    </pattern>
+    <pattern id="scrub" width="28" height="28" patternUnits="userSpaceOnUse">
+      <rect width="28" height="28" fill="#7f9a4c"/>
+      <circle cx="8" cy="9" r="7" fill="#5f7f3a"/><circle cx="21" cy="21" r="7" fill="#668a3e"/>
+      <ellipse cx="6" cy="5" rx="2" ry="4.5" fill="#8b5fbf"/><ellipse cx="22" cy="16" rx="2" ry="4.5" fill="#8b5fbf"/><ellipse cx="13" cy="20" rx="1.8" ry="4" fill="#a37ad6"/>
+    </pattern>
+    <pattern id="mud" width="26" height="26" patternUnits="userSpaceOnUse">
+      <rect width="26" height="26" fill="#a58e6a"/>
+      <ellipse cx="8" cy="18" rx="6" ry="3" fill="#7fb3c4"/><path d="M18 14 v-9 M21 15 v-8 M4 9 v-6" stroke="#6f9a3a" stroke-width="1.8"/>
+      <ellipse cx="18" cy="5" rx="1.4" ry="3" fill="#7a4a24"/>
+    </pattern>
+    <pattern id="wetgrass" width="28" height="28" patternUnits="userSpaceOnUse">
+      <rect width="28" height="28" fill="#a9cf8e"/>
+      <path d="M5 12 l1 -6 l1 6 M7 12 l2 -5 M18 24 l1 -6 l1 6 M20 24 l2 -5" stroke="#7fae5f" stroke-width="1.4" fill="none"/>
+      <circle cx="22" cy="8" r="1.5" fill="#f2c230"/><circle cx="10" cy="21" r="1.4" fill="#fdf2d0"/>
+    </pattern>
+    <pattern id="reeds" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#b9bf72"/>
+      <path d="M3 15 v-11 M7 16 v-13 M12 15 v-10" stroke="#8a8f45" stroke-width="1.6"/>
+      <ellipse cx="7" cy="3" rx="1.3" ry="2.6" fill="#8a5a2b"/>
+    </pattern>
+    <pattern id="carr" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="#6f9a6a"/>
+      <circle cx="10" cy="10" r="10" fill="#5d8a5f"/><circle cx="9" cy="8" r="6" fill="#8fb88a"/>
+      <circle cx="30" cy="28" r="11" fill="#557f57"/><circle cx="29" cy="26" r="7" fill="#9cc292"/>
+    </pattern>
+    <pattern id="fruittrees" width="44" height="40" patternUnits="userSpaceOnUse">
+      <rect width="44" height="40" fill="#5f9e4f"/>
+      <circle cx="10" cy="10" r="10" fill="#4b8a3f"/><circle cx="10" cy="8" r="6.5" fill="#6db35a"/>
+      <circle cx="32" cy="28" r="11" fill="#4b8a3f"/><circle cx="31" cy="25" r="7" fill="#76bb61"/>
+      <circle cx="7" cy="12" r="2.2" fill="#e8402f"/><circle cx="14" cy="6" r="2.2" fill="#e8402f"/><circle cx="28" cy="30" r="2.2" fill="#f7a81b"/><circle cx="35" cy="24" r="2.2" fill="#f7a81b"/>
+    </pattern>
+    <pattern id="hay" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#d9d27a"/><path d="M0 20 L20 0" stroke="#c9bf5f" stroke-width="3"/><circle cx="5" cy="5" r="1.6" fill="#fdf2d0"/><circle cx="15" cy="14" r="1.6" fill="#e8402f"/>
+    </pattern>`);
+}
+
+/* ---------- shared helpers ---------- */
+function areaFeature(parent, f, paint) {
+  const g = el("g", { class: "area hit", "data-id": f.id, tabindex: 0, role: "button", "aria-label": f.title }, parent);
+  paint(g);
+  features.push({ ...f, node: g });
+  return g;
+}
+function edgeBelt(parent, pattern, f) {
+  areaFeature(parent, f, g => ["east", "west"].forEach(k => el("path", { d: polyD(PARK[k]), fill: "none", stroke: `url(#${pattern})`, "stroke-width": 88, "stroke-linejoin": "round" }, g)));
+}
+/* Zones never run under the edge tree belt: mask out a 46-unit band inside the park edge */
+function innerMask() {
+  if (!document.getElementById("innerMask")) {
+    const ring = polyD(PARK.east) + " " + polyD(PARK.west);
+    defs.insertAdjacentHTML("beforeend", `<mask id="innerMask" maskUnits="userSpaceOnUse" x="0" y="0" width="2600" height="1700">
+      <rect x="0" y="0" width="2600" height="1700" fill="black"/><path d="${ring}" fill="white"/><path d="${ring}" fill="none" stroke="black" stroke-width="92" stroke-linejoin="round"/></mask>`);
+  }
+  return "url(#innerMask)";
+}
+/* Raised path: exactly the standard path texture, lifted with a drop shadow */
+function drawRaised(parent, list) {
+  list.forEach(d => el("path", { d, fill: "none", stroke: "#2c4a1b", "stroke-width": 20, "stroke-linecap": "round", opacity: .28, transform: "translate(4 6)" }, parent));
+  drawPathSet(parent, list);
+}
+function drawPathSet(parent, list, casing = "#b49b6c", fillc = "#f6ecd2", w = 11) {
+  list.forEach(d => el("path", { d, fill: "none", stroke: casing, "stroke-width": w + 5, "stroke-linecap": "round" }, parent));
+  list.forEach(d => el("path", { d, fill: "none", stroke: fillc, "stroke-width": w, "stroke-linecap": "round" }, parent));
+}
+function nearestOn(samples, x, y) {
+  let best = null; samples.forEach(([qx, qy]) => { const d = (qx - x) ** 2 + (qy - y) ** 2; if (!best || d < best.d) best = { d, x: qx, y: qy }; });
+  return best;
+}
+function spurPaths(targetsEast, targetsWest, filter = () => true) {
+  const out = [];
+  GATES.forEach(g => {
+    if (!filter(g[0])) return;
+    const S = isWestGate(g[0]) ? targetsWest : targetsEast; if (!S) return;
+    const q = nearestOn(S, g[1], g[2]); if (!q || Math.sqrt(q.d) < 12) return;
+    const mid = [(g[1] + q.x) / 2 - (q.y - g[2]) * 0.2, (g[2] + q.y) / 2 + (q.x - g[1]) * 0.2];
+    out.push(spline([[g[1], g[2]], mid, [+q.x.toFixed(1), +q.y.toFixed(1)]], false));
+  });
+  return out;
+}
+function geomSamples(d, step = 6) { const p = el("path", { d, fill: "none" }, defs); return sample(p, step); }
+function openGates() {
+  const g0 = el("g", { "pointer-events": "none" }, markersG);
+  GATES.forEach(g => {
+    const m = el("g", { "data-x": g[1], "data-y": g[2], "data-minor": 1 }, g0);
+    el("circle", { r: 5, fill: "#fdf2d0", stroke: "#2c4a1b", "stroke-width": 2 }, m);
+  });
+}
+function routeFeature(parent, f, d, color, measure = true) {
+  const g = el("g", { class: "area hit", "data-id": f.id, tabindex: 0, role: "button", "aria-label": f.title }, parent);
+  el("path", { d, fill: "none", stroke: color, "stroke-width": 4.5, "stroke-dasharray": "2 10", "stroke-linecap": "round" }, g);
+  el("path", { d, fill: "none", stroke: "transparent", "stroke-width": 24 }, g);
+  let body = f.body, meta = "";
+  if (measure) {
+    const p = el("path", { d, fill: "none" }, defs); const L = p.getTotalLength() * M_PER_UNIT;
+    const info = { m: Math.round(L / 10) * 10, min: Math.round(L / WALK_M_PER_MIN) };
+    body = typeof f.body === "function" ? f.body(info) : f.body; meta = `${info.min} min`;
+  }
+  features.push({ ...f, body, meta, color, kind: "loop", dist: measure ? { m: Math.round(el("path", { d }, defs).getTotalLength() * M_PER_UNIT / 10) * 10, min: +meta.split(' ')[0] } : null, node: g });
+}
+/* Point tests used to keep things from overlapping */
+const _pt = () => (window.__svgpt ||= document.getElementById("map").createSVGPoint());
+function _local(e, x, y) { const p = _pt(); p.x = x; p.y = y; return p.matrixTransform(e.getScreenCTM().inverse().multiply(world.getScreenCTM())); }
+let _band = null;
+function inCore(x, y) { // inside the park and clear of the 46-unit tree-belt band
+  if (!_band || !_band.isConnected) { _band = el("path", { d: polyD(PARK.east) + " " + polyD(PARK.west), fill: "black", stroke: "black", "stroke-width": 92, "stroke-linejoin": "round" }, defs); }
+  const p = _pt(); p.x = x; p.y = y; return _band.isPointInFill(p) && !_band.isPointInStroke(p);
+}
+function inAnyArea(x, y, skip) { // inside any filled or textured feature area (markers excluded)
+  return features.some(f => f !== skip && !f.node.classList.contains("mk") && [...f.node.querySelectorAll("path,rect,circle,ellipse,polygon")].some(e => {
+    const fill = e.getAttribute("fill") || "", stroke = e.getAttribute("stroke") || "";
+    if (fill && fill !== "none" && fill !== "transparent") return e.isPointInFill(_local(e, x, y));
+    if (stroke.startsWith("url(")) return e.isPointInStroke(_local(e, x, y));
+    return false; }));
+}
+/* Remove decorative trees that would sit on the tree belt, a zone, a hedge room, water or a path */
+/* Paths never run under an edge tree belt: cut a grass verge through the belt wherever a path passes */
+function clearBeltsUnderPaths() {
+  document.getElementById("pathClear")?.remove();
+  const casings = [...world.querySelectorAll('path[stroke="#b49b6c"]')].map(p => p.getAttribute("d"));
+  if (!casings.length) return;
+  defs.insertAdjacentHTML("beforeend", `<mask id="pathClear" maskUnits="userSpaceOnUse" x="0" y="0" width="2600" height="1700"><rect x="0" y="0" width="2600" height="1700" fill="white"/>${casings.map(d => `<path d="${d}" fill="none" stroke="black" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>`).join("")}</mask>`);
+  features.filter(f => !f.node.classList.contains("mk") && [...f.node.querySelectorAll("path")].some(e => (e.getAttribute("stroke") || "").startsWith("url(") && +e.getAttribute("stroke-width") >= 80))
+    .forEach(f => { const w = el("g", { mask: "url(#pathClear)" }, f.node.parentNode); f.node.parentNode.insertBefore(w, f.node); w.appendChild(f.node); });
+}
+function declutter() {
+  clearBeltsUnderPaths();
+  const trees = [...world.querySelectorAll("g.tree")], pre = window.PRE_LAYOUT && PRE_LAYOUT.trees[currentLayer.id];
+  if (pre && pre.length === trees.length) { trees.forEach((tg, i) => { if (pre[i] === 0) tg.remove(); else if (pre[i] !== 1) tg.setAttribute("transform", `translate(${pre[i][0]} ${pre[i][1]})`); }); return; }
+  const out = [];
+  const WM = world.getScreenCTM().inverse();
+  const blockers = [...world.querySelectorAll("path,rect,circle,ellipse,polygon")].filter(e => !e.closest(".tree") && !e.closest("g[filter]") && e.tagName !== "image" && (() => {
+    const f = e.getAttribute("fill") || "", st = e.getAttribute("stroke") || "";
+    return (f && f !== "none" && f !== "transparent" && e.getAttribute("opacity") !== "0") || (st && st !== "none" && st !== "transparent"); })())
+    .map(e => { // world-space bounding box (padded by stroke) for a fast pre-check
+      const bb = e.getBBox(), m = WM.multiply(e.getScreenCTM()), pad = (+e.getAttribute("stroke-width") || 0) / 2 + 1;
+      const cs = [[bb.x, bb.y], [bb.x + bb.width, bb.y], [bb.x, bb.y + bb.height], [bb.x + bb.width, bb.y + bb.height]].map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]);
+      return { e, inv: m.inverse(), x0: Math.min(...cs.map(c => c[0])) - pad, x1: Math.max(...cs.map(c => c[0])) + pad, y0: Math.min(...cs.map(c => c[1])) - pad, y1: Math.max(...cs.map(c => c[1])) + pad,
+        fill: (() => { const f = e.getAttribute("fill") || ""; return f && f !== "none" && f !== "transparent" && e.getAttribute("opacity") !== "0"; })(),
+        stroke: (() => { const st = e.getAttribute("stroke") || "none"; return st !== "none" && st !== "transparent"; })() };
+    });
+  const P = _pt();
+  const blocked = (px, py) => blockers.some(b => { if (px < b.x0 || px > b.x1 || py < b.y0 || py > b.y1) return false;
+    P.x = px; P.y = py; const q = P.matrixTransform(b.inv); return (b.fill && b.e.isPointInFill(q)) || (b.stroke && b.e.isPointInStroke(q)); });
+  trees.forEach(tg => {
+    const c = tg.children[1], x0 = +c.getAttribute("cx"), y0 = +c.getAttribute("cy"), r = +c.getAttribute("r") + 2;
+    const clear = (x, y) => [[x, y], ...Array.from({ length: 10 }, (_, k) => [x + r * Math.cos(k * Math.PI / 5), y + r * Math.sin(k * Math.PI / 5)])]
+      .every(([px, py]) => inCore(px, py) && !blocked(px, py));
+    // nudge the tree to the nearest clear spot (up to ~70 units away); drop it only if there is none
+    let moved = null;
+    for (let d = 0; d <= 70 && !moved; d += 7) for (let k = 0; k < (d ? 12 : 1); k++) {
+      const dx = d * Math.cos(k * Math.PI / 6), dy = d * Math.sin(k * Math.PI / 6);
+      if (clear(x0 + dx, y0 + dy)) { moved = [dx, dy]; break; }
+    }
+    if (!moved) { tg.remove(); out.push(0); } else if (moved[0] || moved[1]) { tg.setAttribute("transform", `translate(${moved[0].toFixed(1)} ${moved[1].toFixed(1)})`); out.push([+moved[0].toFixed(1), +moved[1].toFixed(1)]); } else out.push(1);
+  });
+  (window.__treesOut ||= {})[currentLayer.id] = out;
+}
+function treeClumps(parent, list, c1 = "#5aa04a", c2 = "#78bd62") {
+  list.forEach(([x, y, n], i) => {
+    for (let k = 0; k < n; k++) {
+      const a = i * 2.3 + k * 2.1, r = 12 + (k % 2) * 4, cx = x + Math.cos(a) * 14 * k, cy = y + Math.sin(a) * 12 * k;
+      const tg = el("g", { class: "tree" }, parent);
+      el("circle", { cx: cx + 2, cy: cy + 4, r, fill: "#3e7a35", opacity: .4 }, tg);
+      el("circle", { cx, cy, r, fill: c1 }, tg);
+      el("circle", { cx: cx - r * .3, cy: cy - r * .3, r: r * .55, fill: c2 }, tg);
+    }
+  });
+}
+function rectPts(cx, cy, w, h, rot) {
+  const a = rot * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  return [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]].map(([x, y]) => [+(cx + x * c - y * s).toFixed(1), +(cy + x * s + y * c).toFixed(1)]);
+}
+
+/* ---------- glyphs for square markers ---------- */
+function glyph(kind, s) {
+  const P = d => el("path", { d }, s);
+  switch (kind) {
+    case "loft": P("M-9,1 L0,-8 L9,1 M-6,-1 V8 H6 V-1"); el("circle", { cx: 0, cy: 3, r: 2, fill: "#fff", stroke: "none" }, s); break;
+    case "den": [[-5, -5], [0, -7], [5, -5]].forEach(([x, y]) => el("circle", { cx: x, cy: y, r: 2, fill: "#fff", stroke: "none" }, s)); el("ellipse", { cx: 0, cy: 3, rx: 5.5, ry: 4.5, fill: "#fff", stroke: "none" }, s); break;
+    case "blodge": P("M-10,7 Q0,-14 10,7 Z"); P("M-6,7 L-2,-2 M2,-3 L6,7 M-3,7 L3,-1"); break;
+    case "sluice": P("M-9,-6 V8 M9,-6 V8 M-9,-6 H9"); P("M-6,2 q3,-3 6,0 t6,0"); P("M-6,6 q3,-3 6,0 t6,0"); break;
+    case "hide": el("circle", { cx: -4.5, cy: 2, r: 4.5 }, s); el("circle", { cx: 4.5, cy: 2, r: 4.5 }, s); P("M-2,-5 H2"); break;
+    case "gateway": P("M-8,9 V-8 M-8,-8 H7 L4,-4 L7,0 H-8"); break;
+    case "kitchen": P("M-9,-1 H9 M-7,-1 V6 Q-7,9 -4,9 H4 Q7,9 7,6 V-1"); P("M-3,-5 Q-1,-7 -3,-9 M2,-5 Q4,-7 2,-9"); break;
+    case "council": el("circle", { cx: -5, cy: -4, r: 3 }, s); el("circle", { cx: 5, cy: -4, r: 3 }, s); P("M-10,8 Q-5,0 0,8 M0,8 Q5,0 10,8"); break;
+    case "yard": P("M-8,8 L0,-8 L8,8 Z"); P("M-3,4 H3"); break;
+    case "nest": P("M0,9 V-2 M-8,-2 H8"); P("M-6,-2 Q0,-10 6,-2"); break;
+    /* species sketches for the baseline markers: white silhouettes, each with one tell-tale feature */
+    case "sp-beaver": { const F = (d, fill = "#fff") => el("path", { d, fill, stroke: "none" }, s);
+      F("M-15,8.5 Q-16.5,2 -12,1 Q-6.5,0 -4.5,4 Q-6,9.5 -15,8.5 Z", "#fff");                 // big flat paddle tail
+      el("path", { d: "M-14.5,3.5 L-6,6.8 M-13,1.8 L-5.2,4.6 M-15.4,6 L-8.5,8.6 M-12,1.2 L-15,7.8 M-9,1.2 L-11.8,8.8 M-6.4,2.6 L-8.4,8.6", stroke: "#b4532a", "stroke-width": 0.8 }, s); // scaly cross-hatch
+      F("M-7,6 Q-9,-4 -1,-6.5 Q6,-8 9,-3 Q11.5,-0.5 10.5,2 Q9,4 6,4 Q1,7.5 -7,6 Z");         // big humped body + head
+      el("circle", { cx: 5.2, cy: -6.4, r: 1.3, fill: "#fff" }, s);
+      el("circle", { cx: 7.6, cy: -2.6, r: 0.95, fill: "#3a2614" }, s);
+      F("M9.4,1.6 h1.6 v3 h-1.6 Z", "#f7c04a"); break; }                                    // orange front teeth
+    case "sp-parakeet": { const F = (d, fill) => el("path", { d, fill, stroke: "none" }, s);
+      el("path", { d: "M-11,7.5 Q0,5.5 11,8", stroke: "#7a4a24", "stroke-width": 2.4, fill: "none", "stroke-linecap": "round" }, s);   // branch
+      F("M-2.5,4.5 L-8,13.6 L-5.6,14 L0.5,5.2 Z", "#4fae3a");                                                                 // long thin tail
+      F("M-4,5.6 Q-6.4,0 -3,-4 Q-0.5,-7.4 2.6,-7.8 Q5.8,-8 6.8,-5.2 Q7.2,-3 6,-1.4 Q4,2 2.6,4.4 Q0,6.2 -4,5.6 Z", "#8ee06a"); // slim upright body, head in profile
+      F("M-4.2,5 Q-5.8,-0.6 -2.6,-3.2 Q0.6,-2 0.4,3.6 Q-1.6,5.6 -4.2,5 Z", "#4fae3a");                                       // folded wing
+      F("M6.2,-6.6 Q9.8,-6.4 9.6,-3 Q9.4,-1.6 8.2,-1.8 Q8.6,-3.6 6.6,-4 Z", "#e8402f");                                        // hooked red beak
+      el("path", { d: "M6.3,-1.6 Q4.6,-0.2 3.6,1.6", stroke: "#1f1f1f", "stroke-width": 0.9, fill: "none", "stroke-linecap": "round" }, s);            // thin neck ring, slanting
+      el("path", { d: "M5.4,-2.6 Q3.8,-1.2 2.9,0.6", stroke: "#ff9fc8", "stroke-width": 0.7, fill: "none", "stroke-linecap": "round" }, s);
+      el("circle", { cx: 4.9, cy: -5.4, r: 0.65, fill: "#1f1f1f" }, s);                                                       // small eye only
+      [[-2.6, 7.2], [0.2, 7]].forEach(([x, y]) => el("path", { d: `M${x},${y - 1.6} v1.8`, stroke: "#9a9a9a", "stroke-width": 1, "stroke-linecap": "round" }, s)); break; }
+    case "sp-fox": { const F = (d, fill) => el("path", { d, fill, stroke: "none" }, s);
+      F("M-10,-10 L-4,-4 L-9,-1 Z", "#e8792b"); F("M10,-10 L4,-4 L9,-1 Z", "#e8792b");                                           // ears
+      F("M-8.4,-7.6 L-5.2,-4.4 L-7.6,-3 Z", "#3a2614"); F("M8.4,-7.6 L5.2,-4.4 L7.6,-3 Z", "#3a2614");                           // inner ears
+      F("M-10,-3 Q-9,-7 0,-6.5 Q9,-7 10,-3 Q9,3 0,11 Q-9,3 -10,-3 Z", "#f08a32");                                                  // face
+      F("M-10,-3 Q-6,2 -2.5,3 Q-1.5,7 0,11 Q-9,3 -10,-3 Z", "#fff"); F("M10,-3 Q6,2 2.5,3 Q1.5,7 0,11 Q9,3 10,-3 Z", "#fff");     // white cheeks
+      F("M-1.6,9 Q0,8 1.6,9 Q1,11 0,11.4 Q-1,11 -1.6,9 Z", "#1f1f1f");                                                             // nose
+      F("M-5.6,-1.4 Q-4,-2.8 -2.4,-1.4 Q-4,-0.6 -5.6,-1.4 Z", "#1f1f1f"); F("M5.6,-1.4 Q4,-2.8 2.4,-1.4 Q4,-0.6 5.6,-1.4 Z", "#1f1f1f"); break; } // eyes
+    case "sp-pigeon": { const F = (d, fill) => el("path", { d, fill, stroke: "none" }, s);
+      F("M-12,1 L-6,-1 L-5,4 Z", "#5d6672");                                                                                       // tail
+      F("M-8,1.5 Q-7,-5 0,-4.5 Q5,-4.5 6,-1 Q7,4 1,6.5 Q-6,7 -8,1.5 Z", "#c3cad4");                                               // plump grey body
+      F("M-6,0 Q-2,-3 3,-1 Q0,3 -6,0 Z", "#9aa3ae"); el("path", { d: "M-4.5,0.4 L1,0.3 M-3.5,1.6 L0.5,1.4", stroke: "#3c434c", "stroke-width": 1, "stroke-linecap": "round" }, s); // wing + bars
+      F("M3.2,-3.2 Q3,-8.5 6.5,-9 Q9.5,-9 9.6,-6 Q9.4,-4 7.6,-2.4 Q6,-0.8 3.2,-3.2 Z", "#8b95a3");                               // head + neck
+      F("M3.6,-3 Q4,-6 6.6,-5.4 Q7.6,-3.6 6,-2 Q4.6,-1.4 3.6,-3 Z", "#4fb39a"); F("M5,-4.4 Q6.6,-5 7,-3.6 Q6,-2.6 5,-4.4 Z", "#a46bc9"); // iridescent neck
+      F("M9.4,-7 L12,-6.2 L9.6,-5.4 Z", "#3c434c");                                                                                // beak
+      el("circle", { cx: 7.4, cy: -7, r: 1, fill: "#f08a32" }, s); el("circle", { cx: 7.5, cy: -7, r: 0.45, fill: "#1f1f1f" }, s); // orange eye
+      el("path", { d: "M0,6.4 v3 M2.4,6 v3.2", stroke: "#e2588a", "stroke-width": 1.2, "stroke-linecap": "round" }, s); break; } // pink legs
+    case "sp-crane": { const F = (d, fill = "#fff") => el("path", { d, fill, stroke: "none" }, s);
+      F("M-8,2 Q-11,-1 -9,-3 Q-4,-5 2,-3 Q4,0 2,3 Q-3,5 -8,2 Z");                          // body
+      F("M-10,-1 Q-13,1 -12,4 Q-10,2 -8,2 Z");                                              // bushy tail
+      el("path", { d: "M1.5,-2.5 L5,-11", stroke: "#1f1f1f", "stroke-width": 2.2, "stroke-linecap": "round", fill: "none" }, s); // black neck
+      el("circle", { cx: 5.3, cy: -11.3, r: 1.7, fill: "#1f1f1f" }, s);
+      el("circle", { cx: 5.3, cy: -12.6, r: 0.9, fill: "#e8402f" }, s);                     // red crown
+      el("path", { d: "M6.5,-11 L10.5,-10", stroke: "#fff", "stroke-width": 1.3, "stroke-linecap": "round" }, s);
+      el("path", { d: "M-2,3.5 L-3,12 M0.5,3.5 L1,12", stroke: "#fff", "stroke-width": 1.3, "stroke-linecap": "round" }, s); break; }
+    case "sp-stork": { const F = (d, fill = "#fff") => el("path", { d, fill, stroke: "none" }, s);
+      F("M-9,0 Q-8,-4 -2,-4 Q3,-4 4,-1 Q3,3 -3,3 Q-8,3 -9,0 Z");                            // white body
+      F("M-11,1 Q-7,-1 -1,0 Q-3,3.5 -8,3.5 Z", "#1f1f1f");                                   // black wing feathers
+      el("path", { d: "M3,-2 Q5,-7 4,-10", stroke: "#fff", "stroke-width": 2.4, "stroke-linecap": "round", fill: "none" }, s); // white neck
+      el("circle", { cx: 4.2, cy: -10.4, r: 1.8, fill: "#fff" }, s);
+      el("path", { d: "M5.5,-10 L10.5,-6.5", stroke: "#ff3b2f", "stroke-width": 1.9, "stroke-linecap": "round" }, s);  // long red bill
+      el("path", { d: "M-3,3 L-3,12 M0,3 L1,12", stroke: "#ff3b2f", "stroke-width": 1.5, "stroke-linecap": "round" }, s); break; } // red legs
+    case "sp-otter": { const F = (d, fill = "#fff") => el("path", { d, fill, stroke: "none" }, s);
+      F("M-12,3 Q-10,-1 -5,-3 Q0,-5 3,-4 Q4,-9 8,-9 Q11.5,-9 11.5,-6 Q11.5,-3.5 8.5,-3 Q6,-2.5 5,0 L4,3 Z"); // arched back, head up
+      el("circle", { cx: 6.8, cy: -9.4, r: 1.1, fill: "#fff" }, s);                                    // small ear
+      el("circle", { cx: 9, cy: -6.8, r: 0.85, fill: "#3a2614" }, s);
+      el("path", { d: "M11,-5.2 l3,-1 M11,-4.5 l3,0.5", stroke: "#fff", "stroke-width": 0.6 }, s);     // whiskers
+      el("path", { d: "M-13,3.5 q2.2,-2 4.4,0 t4.4,0 t4.4,0 t4.4,0 t4.4,0", stroke: "#9fdcf5", "stroke-width": 1.8, fill: "none", "stroke-linecap": "round" }, s); // water line
+      el("path", { d: "M-10,7.5 q2,-1.6 4,0 t4,0 t4,0 t4,0", stroke: "#9fdcf5", "stroke-width": 1.4, fill: "none", "stroke-linecap": "round" }, s); break; }
+    case "sp-vole": { const F = (d, fill = "#fff") => el("path", { d, fill, stroke: "none" }, s);
+      el("path", { d: "M-6,5 Q-10,6 -12,4", stroke: "#fff", "stroke-width": 1.4, fill: "none", "stroke-linecap": "round" }, s); // short thin tail
+      F("M-7,4 Q-8,-4 0,-5 Q6,-5 8,-1 Q9,3 6,5 Q0,7 -7,4 Z");                              // round, chubby body
+      el("circle", { cx: 3.8, cy: -4.6, r: 1.6, fill: "#fff" }, s);                          // tiny round ear
+      el("circle", { cx: 5.8, cy: -1.6, r: 0.9, fill: "#3a2614" }, s);
+      F("M8.3,0.5 l1.8,0.6 l-1.6,0.9 Z", "#fff"); break; }                                   // blunt nose
+    case "raft": P("M-9,4 H9 L7,8 H-7 Z"); P("M-5,4 V-4 H5 V4"); break;
+    default: el("circle", { r: 2.5, fill: "#fff", stroke: "none" }, s);
+  }
+}
+
+/* ================= Fourth-Nature Park ================= */
+function drawFourth() {
+  const inPark = el("g", { "clip-path": "url(#parkClip)" }, world);
+  edgeBelt(inPark, "birch", { id: "f-wood", cat: "f_habitat", title: "Self-sown woodland edge", label: "Birch and sycamore", lx: 1470, ly: 470,
+    body: [["The tree belt is left alone; self-sown birch, sycamore and buddleia fill the gaps."],
+           ["Berlin's Südgelände: a wood that grew by itself on a railyard, kept for nature and people.", "kowarik"]] });
+
+  const habG = el("g", { mask: innerMask() }, inPark);
+  // Rubble terraces from demolished park buildings
+  const terr = [[150, 82, "rubbleB"], [112, 60, "rubbleA"], [72, 38, "rubbleB"]];
+  areaFeature(habG, { id: "f-terraces", cat: "f_habitat", title: "Rubble terraces", label: "Bombsite flora", lx: 1705, ly: 525,
+    body: [["Rubble from the park's demolished buildings, stacked in terraces for plants to colonise."],
+           ["London's bombsites grew a new pioneer flora on rubble; the terraces repeat it on purpose.", "hewitt"]] },
+    g => { const ds = terr.map(([rx, ry], i) => spline(blobPts(1705, 525, rx, ry, -32, 21 + i, 0.08, 12)));
+      // each terrace is a ring, so no two rubble textures sit on top of each other
+      terr.forEach(([rx, ry, pat], i) => el("path", { d: ds[i] + (ds[i + 1] ? " " + ds[i + 1] : ""), "fill-rule": "evenodd", fill: `url(#${pat})`, stroke: "#8f6f50", "stroke-width": 3 }, g)); });
+  // Buddleia & willowherb scrub
+  [[1185, 1060, 52, 92, 22, 2], [1520, 430, 70, 34, -38, 3], [470, 1145, 66, 32, 22, 4], [1890, 650, 34, 70, 6, 5]].forEach((s, i) =>
+    areaFeature(habG, { id: "f-scrub-" + i, group: "Buddleia and willowherb scrub", cat: "f_habitat", title: "Buddleia and willowherb scrub", label: "Pioneer scrub", lx: s[0], ly: s[1],
+      body: [["Buddleia and rosebay willowherb: bombsite pioneers and late-summer nectar for butterflies."],
+             ["Salisbury recorded this flora on bombed sites in 1943.", "hewitt"]] },
+      g => el("path", { d: spline(blobPts(s[0], s[1], s[2], s[3], s[4], s[5])), fill: "url(#scrub)", stroke: "#5f7f3a", "stroke-width": 3 }, g)));
+  // The Basin: drained West Lake left to fill in by itself
+  areaFeature(habG, { id: "f-basin", cat: "f_habitat", title: "The Basin", label: "Drained lake, left alone", lx: 690, ly: 1182,
+    body: [["The West Lake is drained and left: rain pools, reeds and willow arrive, and it slowly fills in."],
+           ["Wasteland diversity depends on local soil, wetness and age, so a wet hollow adds habitat.", "bonthoux"]] },
+    g => { el("path", { d: spline(blobPts(690, 1182, 132, 56, 14, 3, 0.1, 12)), fill: "url(#mud)", stroke: "#7a6040", "stroke-width": 4, "stroke-dasharray": "10 6" }, g); });
+
+  // Succession plots: same ground, abandoned in different years
+  const plots = [
+    { x: 1335, y: 998, yr: 2040, pat: "rubbleA", stage: "Bare rubble", txt: "Just cleared: bare crushed brick." },
+    { x: 1455, y: 952, yr: 2035, pat: "herbs", stage: "Pioneer herbs", txt: "Five years on: willowherb, ragwort and grass." },
+    { x: 1578, y: 906, yr: 2030, pat: "scrub", stage: "Scrub", txt: "Ten years on: buddleia and bramble scrub, full of birds and insects." },
+    { x: 1700, y: 860, yr: 2025, pat: "birch", stage: "Young woodland", txt: "Fifteen years on: a young birch wood." },
+  ];
+  const plotG = el("g", { mask: innerMask() }, inPark);
+  plots.forEach((p, i) => areaFeature(plotG, { id: "f-plot-" + i, cat: "f_plots", title: `Plot ${p.yr}: ${p.stage}`, label: `Left alone since ${p.yr}`, lx: p.x, ly: p.y,
+      body: [[p.txt], ["Plots of different ages side by side give the most varied species mix.", "bonthoux"]] },
+    g => {
+      el("path", { d: polyD(rectPts(p.x, p.y, 104, 70, -22)), fill: `url(#${p.pat})`, stroke: "#2c4a1b", "stroke-width": 3, "stroke-linejoin": "round" }, g);
+    }));
+
+  // Desire lines (informal rubble trails)
+  const trailG = el("g", { "pointer-events": "none" }, inPark);
+  const trails = [
+    [[2022, 683], [1930, 700], [1840, 740], [1760, 760]], [[1595, 1000], [1560, 960], [1530, 900], [1515, 820]], [[1180, 770], [1240, 800], [1300, 830]],
+    [[1621, 250], [1640, 330], [1690, 420]], [[700, 1080], [700, 1110]], [[590, 1250], [600, 1215], [560, 1150], [500, 1110]], [[344, 1138], [420, 1120], [480, 1100]],
+    [[1247, 1195], [1270, 1120], [1320, 1060]], [[1909, 421], [1850, 470], [1800, 520]],
+  ].map((pts, i) => spline(meander(pts, 7, 40, i), false));
+  drawPathSet(trailG, trails);
+  const trailHit = el("g", {}, inPark);
+  areaFeature(trailHit, { id: "f-trails", cat: "f_people", title: "Desire lines", label: "Paths nobody planned", lx: 1530, ly: 900,
+    body: [["Beyond the walkway there are no laid paths: trails form where people walk and fade when they stop."],
+           ["Südgelände reused old tracks as paths and let the site set the routes.", "kowarik"]] },
+    g => trails.forEach(d => el("path", { d, fill: "none", stroke: "transparent", "stroke-width": 20 }, g)));
+
+  // Raised walkway with mown edges (cues to care)
+  const walk = [
+    [[1118, 1256], [1150, 1150], [1240, 1040], [1380, 930], [1520, 820], [1640, 705], [1760, 600], [1860, 500], [1909, 421]],
+    [[1330, 555], [1420, 640], [1520, 720], [1640, 705]],
+    [[947, 1001], [860, 1075], [760, 1100], [620, 1102], [480, 1088], [409, 1000]],
+  ].map(pts => spline(pts, false));
+  const walkG = el("g", {}, inPark);
+  walk.forEach(d => el("path", { d, fill: "none", stroke: "#b9d98a", "stroke-width": 40, "stroke-linecap": "round", opacity: .9 }, walkG));
+  const wf = { id: "f-walkway", cat: "f_people", title: "Raised walkway", label: "The only built path", lx: 1520, ly: 820,
+    body: [["A raised walkway linking the main gates, so the ground below can grow undisturbed."],
+           ["Südgelände added a metal walkway so visitors don't trample the protected area.", "kowarik"],
+           ["Mown strips along it show the wildness is intended; visible care makes messy nature acceptable.", "nassauer"]] };
+  areaFeature(walkG, wf, g => {
+    drawRaised(g, walk);
+  });
+  treeClumps(el("g", { "pointer-events": "none" }, inPark), [[1240, 1170, 2], [1390, 1030, 2], [1800, 720, 2], [1460, 520, 2], [380, 1110, 2], [880, 1260, 3]], "#8fae5a", "#b6d07a");
+
+  // Point features
+  [
+    { id: "f-loft", cat: "f_wildlife", kind: "sp-pigeon", x: 1065, y: 1030, title: "Pigeon loft", label: "Managed, not culled",
+      body: [["A supervised loft for feral pigeons. Eggs are swapped for dummies, so the flock stays stable without culling."],
+             ["Basel's pigeon programme was built around lofts like this.", "pigeons"]] },
+    { id: "f-parakeet", cat: "f_wildlife", kind: "sp-parakeet", x: 1500, y: 420, title: "Parakeet roost", label: "London's newest locals",
+      body: [["Old trees and large nest boxes for ring-necked parakeets.", "nnss"], ["Parakeets take tree holes from native birds.", "songbird"]] },
+    { id: "f-den-1", group: "Fox denning banks", cat: "f_wildlife", kind: "sp-fox", x: 1955, y: 600, title: "Fox denning bank", label: "Next to the houses",
+      body: [["Earth banks under edge scrub, where foxes can den near the gardens they forage in."],
+             ["Fox sightings fell as green space rose, so dens sit at the edges, next to housing.", "scott"]] },
+    { id: "f-den-2", group: "Fox denning banks", cat: "f_wildlife", kind: "sp-fox", x: 1265, y: 1150, title: "Fox denning bank", label: "Next to the houses",
+      body: [["Earth banks under edge scrub, where foxes can den near the gardens they forage in."],
+             ["Fox sightings fell as green space rose, so dens sit at the edges, next to housing.", "scott"]] },
+    { id: "f-den-3", group: "Fox denning banks", cat: "f_wildlife", kind: "sp-fox", x: 430, y: 1050, title: "Fox denning bank", label: "Next to the houses",
+      body: [["Earth banks under edge scrub, where foxes can den near the gardens they forage in."],
+             ["Fox sightings fell as green space rose, so dens sit at the edges, next to housing.", "scott"]] },
+  ].forEach(p => addMarker(p));
+  openGates();
+  [...features.filter(f => f.lx != null && f.node.classList.contains("area"))].forEach(f => addLabel(f));
+}
+
+/* ================= Restoration Park ================= */
+Object.assign(SRC, {
+  ptes:    { cite: "People's Trust for Endangered Species (2023), Helping water voles on your land", url: "https://www.essexrivershub.org.uk/wp-content/uploads/2023/07/PTES_Helping_water_voles_on_your_land.pdf" },
+  crane:   { cite: "RSPB (n.d.), Return of the crane", url: "https://community.rspb.org.uk/ourwork/b/rspb-england/posts/return-of-the-crane" },
+  stork:   { cite: "The White Stork Project (n.d.), About", url: "https://whitestorkproject.org/about/" },
+  storkfaq:{ cite: "The White Stork Project (n.d.), Frequently asked questions", url: "https://whitestorkproject.org/faq/" },
+  cardiff: { cite: "Cardiff University Otter Project (n.d.), Mitigation", url: "https://www.cardiff.ac.uk/otter-project/conservation-and-education/mitigation" },
+  greenbr: { cite: "Natural England (2016), Green bridges: safer travel for wildlife", url: "https://www.gov.uk/government/news/green-bridges-safer-travel-for-wildlife" },
+  otter:   { cite: "IRD Duhallow (n.d.), Provision of habitat and resting areas for otter", url: "https://www.duhallowlife.com/sites/default/files/C7%20Final%20Technical%20Report%20-%20Provision%20of%20habitat%20and%20resting%20areas%20for%20otter.pdf" },
+});
+Object.assign(CATS, {
+  r_species: { name: "Lost species habitats", color: "#7a4a24" },
+  r_wet:     { name: "Water", color: "#1f7a78" },
+  r_visit:   { name: "People (last)", color: "#b4532a" },
+});
+LAYERS.find(l => l.id === "restoration").order = ["r_species", "r_wet", "r_visit"];
+const R_LOOP = [[1057.5,985.7],[1067.7,972.4],[1116.9,935.0],[1149.5,900.0],[1355.8,629.0],[1378.8,591.0],[1391.7,535.0],[1411.2,507.5],[1451.0,472.1],[1543.0,401.4],[1610.0,338.6],[1628.7,329.7],[1647.1,330.6],[1684.0,344.5],[1748.0,384.4],[1829.0,416.8],[1848.8,430.3],[1862.8,450.0],[1902.2,544.0],[1955.9,642.0],[1962.5,674.6],[1958.2,688.6],[1948.8,701.6],[1893.0,743.5],[1844.5,772.8],[1802.0,805.0],[1672.0,890.5],[1522.0,982.2],[1430.0,1048.2],[1329.0,1112.7],[1306.0,1123.2],[1235.0,1144.5],[1148.2,1187.1],[1134.5,1188.6],[985.8,1264.8],[975.7,1273.1],[937.0,1287.5],[878.0,1291.0],[847.0,1287.3],[715.0,1232.3],[605.0,1192.0],[518.0,1150.4],[423.0,1113.6],[398.5,1101.8],[393.5,1095.9],[393.1,1090.1],[406.0,1076.0],[434.0,1061.7],[458.0,1056.3],[487.0,1057.2],[517.0,1066.6],[587.0,1107.2],[635.0,1128.6],[667.0,1136.1],[721.0,1137.4],[774.0,1130.7],[844.0,1114.3],[881.0,1100.7],[915.3,1080.6],[928.2,1079.1]];
+
+function restorationDefs() {
+  if (document.getElementById("otterwood")) return;
+  defs.insertAdjacentHTML("beforeend", `
+    <pattern id="tallgrass" width="18" height="18" patternUnits="userSpaceOnUse">
+      <rect width="18" height="18" fill="#9cc47a"/>
+      <path d="M3 17 q1 -8 3 -14 M8 17 q-1 -7 -3 -12 M13 17 q1 -9 3 -14" stroke="#6f9a4a" stroke-width="1.5" fill="none"/>
+      <circle cx="15" cy="4" r="1.5" fill="#e2c35a"/>
+    </pattern>
+    <pattern id="fenground" width="56" height="56" patternUnits="userSpaceOnUse">
+      <rect width="56" height="56" fill="#a7c784"/>
+      <path d="M0 40 Q14 34 28 41 T56 38 V56 H0 Z" fill="#9dbf7a"/>
+      <g fill="#7fa45c"><ellipse cx="11" cy="13" rx="6" ry="4"/><ellipse cx="38" cy="25" rx="7" ry="4.5"/><ellipse cx="22" cy="47" rx="6" ry="4"/></g>
+      <g stroke="#5f8a45" stroke-width="1.4" fill="none" stroke-linecap="round">
+        <path d="M8 14 l-2 -7 M11 13 v-8 M14 14 l2 -7"/><path d="M35 26 l-2 -7 M38 25 v-9 M41 26 l2 -7"/><path d="M19 48 l-2 -6 M22 47 v-8 M25 48 l2 -6"/>
+        <path d="M48 10 v-6 M50 10 v-7 M52 10 v-5" stroke="#4a6f3a"/><path d="M4 32 v-6 M6 32 v-7" stroke="#4a6f3a"/>
+      </g>
+      <circle cx="30" cy="8" r="1.5" fill="#f4d04e"/><circle cx="46" cy="45" r="1.5" fill="#fdf2d0"/><circle cx="6" cy="52" r="1.4" fill="#e9a8c4"/>
+    </pattern>
+    <pattern id="otterwood" width="44" height="44" patternUnits="userSpaceOnUse">
+      <rect width="44" height="44" fill="#4d6f3c"/>
+      <circle cx="11" cy="11" r="10" fill="#3d5c30"/><circle cx="10" cy="9" r="6" fill="#6b8f4a"/>
+      <circle cx="33" cy="31" r="10" fill="#3d5c30"/><circle cx="32" cy="29" r="6" fill="#7a9c55"/>
+      <rect x="22" y="8" width="14" height="4" rx="2" fill="#7a4a24" transform="rotate(-20 29 10)"/><rect x="4" y="32" width="13" height="4" rx="2" fill="#7a4a24" transform="rotate(15 10 34)"/>
+    </pattern>
+    <pattern id="sedge" width="24" height="24" patternUnits="userSpaceOnUse">
+      <rect width="24" height="24" fill="#b7cf7a"/>
+      <path d="M0 12 H24" stroke="#86c8df" stroke-width="3"/>
+      <path d="M3 9 l1 -6 l1 6 M8 9 l2 -6 M15 22 l1 -6 l1 6 M19 22 l2 -6" stroke="#6f8f3a" stroke-width="1.5" fill="none"/>
+    </pattern>
+    <pattern id="alder" width="40" height="40" patternUnits="userSpaceOnUse">
+      <rect width="40" height="40" fill="#3f7468"/>
+      <ellipse cx="30" cy="9" rx="8" ry="3" fill="#7fc0d6"/><ellipse cx="8" cy="33" rx="6" ry="2.4" fill="#7fc0d6"/>
+      <circle cx="11" cy="12" r="9" fill="#2f5f55"/><circle cx="10" cy="10" r="5.5" fill="#6aa58f"/>
+      <circle cx="29" cy="28" r="10" fill="#2f5f55"/><circle cx="28" cy="26" r="6" fill="#77b39a"/>
+    </pattern>
+    <pattern id="reedbed" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#8fbf9e"/>
+      <ellipse cx="14" cy="16" rx="6" ry="2.2" fill="#86c8df"/>
+      <path d="M3 18 q1 -7 0 -14 M6 18 q1 -8 2 -13 M10 13 q0 -6 -1 -10 M16 10 q1 -5 0 -8" stroke="#4f7f45" stroke-width="1.5" fill="none"/>
+      <ellipse cx="6" cy="4" rx="1.3" ry="2.6" fill="#7a4a24"/><ellipse cx="16" cy="2" rx="1.2" ry="2.3" fill="#7a4a24"/>
+    </pattern>
+    <pattern id="marsh" width="26" height="26" patternUnits="userSpaceOnUse">
+      <rect width="26" height="26" fill="#a6cbb0"/>
+      <ellipse cx="7" cy="7" rx="6" ry="3" fill="#86c8df"/><ellipse cx="19" cy="19" rx="7" ry="3" fill="#86c8df"/>
+      <path d="M16 9 v-7 M19 10 v-8 M4 22 v-7 M7 23 v-6" stroke="#7f8f45" stroke-width="1.6"/>
+    </pattern>`);
+}
+
+function drawRestoration() {
+  restorationDefs();
+  const inPark = el("g", { "clip-path": "url(#parkClip)" }, world);
+  const sp = (id, title, label, lx, ly, body, extra = {}) => ({ id, cat: "r_species", title, label, lx, ly, body, ...extra });
+
+  edgeBelt(inPark, "alder", { id: "r-carr", cat: "r_wet", title: "Wet woodland edge", label: "Willow and alder", lx: 1470, ly: 470,
+    body: [["Replanted as wet willow and alder woodland: beaver food and dense boundary cover."],
+           ["Beavers cut and regrow willow, opening up the canopy.", "brazier"]] });
+
+  /* ---- Wetland mosaic filling the interior ---- */
+  const zoneG = el("g", { mask: innerMask() }, inPark);
+  const scrapes = [[1262, 772, 34, 18, -30], [1880, 770, 24, 13, 20], [905, 1110, 30, 13, 10], [430, 1118, 24, 11, 20], [1160, 880, 22, 12, -40], [1950, 560, 18, 26, 20], [1440, 1000, 26, 12, -30]];
+  areaFeature(zoneG, { id: "r-scrapes", cat: "r_wet", title: "Wet grassland and scrapes", label: "Floods in winter", lx: 1330, ly: 760,
+    body: [["Seasonally flooded grassland with shallow scrapes: feeding ground for storks and cranes."]] },
+    g => scrapes.forEach(([x, y, rx, ry, r], i) => el("path", { d: spline(blobPts(x, y, rx, ry, r, 60 + i, 0.18, 9)), fill: "#86c8df", stroke: "#3f8fb3", "stroke-width": 2.5 }, g)));
+
+  [[1345, 680, 50, 105, -32, 81], [1700, 515, 62, 30, -35, 82], [1785, 770, 40, 22, -30, 83], [1150, 940, 30, 50, 40, 86], [1205, 1075, 44, 26, -40, 87]].forEach(([x, y, rx, ry, r, sd], i) =>
+    areaFeature(zoneG, { id: "r-swamp-" + i, group: "Reed swamp", cat: "r_wet", title: "Reed swamp", label: "Tall reed and sedge", lx: x, ly: y,
+      body: [["Dense reed and sedge filling the gaps, so the park works as one wetland."]] },
+      g => el("path", { d: spline(blobPts(x, y, rx, ry, r, sd, 0.2, 11)), fill: "url(#reedbed)", stroke: "#5f8a52", "stroke-width": 3 }, g)));
+
+  // Crane marsh (north)
+  areaFeature(zoneG, sp("r-crane", "Crane marsh", "Common crane", 1545, 482,
+    [["Reedbed in standing water around an open pool, screened so people can't see the nest."],
+     ["Cranes nest in undisturbed reedbeds with standing water, safe from mammal predators.", "crane"]]),
+    g => el("path", { d: spline(blobPts(1545, 482, 168, 64, -42, 71, 0.2, 13)), fill: "url(#marsh)", stroke: "#3f8fb3", "stroke-width": 3 }, g));
+
+  // Stork meadow (north-east) with platform colony
+  areaFeature(zoneG, sp("r-stork", "Stork meadow", "White stork", 1852, 586,
+    [["Long wet meadow under a cluster of nest platforms, grouped so storks can form a colony."],
+     ["Storks nest in colonies; the lack of one is why visitors stopped breeding in the UK.", "stork"],
+     ["They eat grasshoppers, beetles and worms, so the meadow stays long and wet.", "storkfaq"]]),
+    g => el("path", { d: spline(blobPts(1852, 586, 90, 58, 25, 73, 0.2, 13)), fill: "url(#tallgrass)", stroke: "#6f9a4a", "stroke-width": 3 }, g));
+
+  // Reed swamp where the old otter strip was
+  areaFeature(zoneG, { id: "r-swamp-6", group: "Reed swamp", cat: "r_wet", title: "Reed swamp", label: "Tall reed and sedge", lx: 1560, ly: 880,
+    body: [["Dense reed and sedge filling the gaps, so the park works as one wetland."]] },
+    g => el("path", { d: spline(blobPts(1560, 885, 120, 30, -33, 88, 0.2, 12)), fill: "url(#reedbed)", stroke: "#5f8a52", "stroke-width": 3 }, g));
+
+  // Water vole ditches (along the brook)
+  areaFeature(zoneG, sp("r-vole", "Water vole ditches", "Water vole", 1295, 905,
+    [["Slow ditches off the brook with soft, sunny banks and tall grass and sedge."],
+     ["Voles need dense margins, soft banks, slow deep water and no shade.", "ptes"]]),
+    g => el("path", { d: spline(blobPts(1295, 905, 128, 64, -43, 75, 0.18, 13)), fill: "url(#sedge)", stroke: "#6f9a4a", "stroke-width": 3 }, g));
+
+  // Old Lake Fen (west)
+  areaFeature(zoneG, sp("r-fen", "Old Lake Fen", "Water vole and reedbed birds", 680, 1180,
+    [["The West Lake becomes a reedbed fen around open pools: a second vole colony."],
+     ["Up to 87% of the world's wetlands may have been lost since 1700.", "davidson"]]),
+    g => el("path", { d: spline(blobPts(680, 1180, 218, 80, 14, 3, 0.16, 14)), fill: "url(#reedbed)", stroke: "#5f8a52", "stroke-width": 4 }, g));
+
+  // Beaver enclosure (≈8 ha)
+  const fence = blobPts(1590, 690, 176, 120, -28, 7, 0.05, 14);
+  areaFeature(zoneG, sp("r-enclosure", "Beaver wetland", "Eurasian beaver", 1590, 760,
+    [["An 8-hectare fenced wetland, about a tenth of the park, for a licensed beaver family."],
+     ["Ealing's beavers were released into the same size of enclosure.", "ealing"],
+     ["Enfield's 6-hectare enclosure lost animals before new ones arrived: reintroductions can fail.", "enfield"]]),
+    g => {
+      el("path", { d: spline(fence), fill: "url(#reedbed)", stroke: "none" }, g);
+      el("path", { d: spline(fence), fill: "none", stroke: "#5c3f20", "stroke-width": 4, "stroke-dasharray": "2 7", "stroke-linecap": "round" }, g);
+      el("path", { d: spline(fence), fill: "none", stroke: "#5c3f20", "stroke-width": 1.5 }, g);
+    });
+
+  // Otter corridor: one unbroken strip of scrub along both canal banks, between the path and the water
+  const OTTER = { east: PARK.east.slice(27, 47), west: PARK.west.slice(25, 34) };
+  areaFeature(el("g", {}, inPark), sp("r-otter", "Otter corridor", "Eurasian otter", 1480, 1080,
+    [["Unbroken scrub and log piles along both canal banks, so otters can move under cover."],
+     ["Otter habitat: more bankside cover and buffer zones, plus artificial holts.", "otter"]]),
+    g => Object.values(OTTER).forEach(p => el("path", { d: "M" + p.join("L"), fill: "none", stroke: "url(#otterwood)", "stroke-width": 92, "stroke-linejoin": "round", "stroke-linecap": "butt" }, g)));
+
+  { const ring = Object.values(OTTER).map(p => "M" + p.join("L")).join(" ");
+    document.getElementById("rBeltMask")?.remove();
+    defs.insertAdjacentHTML("beforeend", `<mask id="rBeltMask" maskUnits="userSpaceOnUse" x="0" y="0" width="2600" height="1700"><rect x="0" y="0" width="2600" height="1700" fill="white"/><path d="${ring}" fill="none" stroke="black" stroke-width="92" stroke-linejoin="round"/></mask>`);
+    features.find(f => f.id === "r-carr").node.setAttribute("mask", "url(#rBeltMask)"); }
+
+  /* ---- Water network: canal -> head pond -> brook -> branches; tunnels under roads and towpaths ---- */
+  const POND = { head: [1695, 772, 50, 28, -28], mid: [1600, 700, 72, 36, -28], low: [1500, 762, 56, 30, -28],
+                 crane: [1585, 492, 50, 22, -42], stork: [1850, 592, 30, 13, 25], fenE: [770, 1192, 60, 24, 10], fenW: [625, 1166, 56, 22, 18] };
+  // the fen's open water is one ragged lagoon made of overlapping lobes, not separate round pools
+  const FEN_LOBES = [[812, 1188, 34, 16, 0], [770, 1194, 60, 24, 10], [712, 1180, 46, 20, 20], [665, 1176, 40, 22, 5], [622, 1166, 54, 22, 18], [585, 1176, 26, 12, 30]];
+  const fringe = (g, d) => el("path", { d, fill: "none", stroke: "url(#reedbed)", "stroke-width": 18, "stroke-linejoin": "round" }, g);
+  const pc = k => [POND[k][0], POND[k][1]];
+  const TUN = { inlet: [[1664, 966], [1670, 935]], grove: [[1125, 1095], [930, 1160]], outfall: [[540, 1180], [511, 1212]] };
+  const mk = (pts, amp, seed) => spline(meander(pts, amp, 52, seed), false);
+  const brookD = mk([pc("head"), [1650, 742], pc("mid"), [1550, 736], pc("low"), [1440, 800], [1385, 870], [1320, 930], [1250, 985], [1180, 1055], TUN.grove[0]], 7, 2);
+  const westD = mk([TUN.grove[1], [890, 1180], [825, 1190]], 6, 3) + " " + spline([[588, 1176], [565, 1176], TUN.outfall[0]], false);
+  const inletD = mk([TUN.inlet[1], [1676, 880], [1688, 820], pc("head")], 5, 1);
+  const brookEl = el("path", { d: brookD, fill: "none" }, defs), BL = brookEl.getTotalLength();
+  const at = f => { const p = brookEl.getPointAtLength(BL * f); return [+p.x.toFixed(1), +p.y.toFixed(1)]; };
+  const nrm = f => { const a = brookEl.getPointAtLength(BL * f), b = brookEl.getPointAtLength(Math.min(BL, BL * f + 2)); const l = Math.hypot(b.x - a.x, b.y - a.y) || 1; return [-(b.y - a.y) / l, (b.x - a.x) / l]; };
+  // smaller streams: each leaves the brook (or a pond on it) and ends in a pond
+  const craneStart = at(0.07);
+  const craneD = mk([craneStart, [1640, 640], [1610, 560], pc("crane")], 5, 4);
+  const storkD = mk([pc("head"), [1760, 735], [1805, 670], pc("stork")], 5, 5);
+  const voleF = [0.6, 0.66, 0.72, 0.78];
+  // ditches leave the brook at a slant (downstream), run straight and slow, and widen into a reedy backwater
+  const volePools = [], ditchDs = voleF.map((f, i) => {
+    const [x, y] = at(f), [nx, ny] = nrm(f), [tx, ty] = [ny, -nx], side = i % 2 ? 1 : -1, len = 58 + (i % 2) * 8;
+    const dir = [nx * side * 0.85 + tx * 0.5, ny * side * 0.85 + ty * 0.5], dl = Math.hypot(...dir); dir[0] /= dl; dir[1] /= dl;
+    const end = [x + dir[0] * len, y + dir[1] * len];
+    volePools.push([end[0] + dir[0] * 10, end[1] + dir[1] * 10, 22, 8, Math.atan2(dir[1], dir[0]) * 180 / Math.PI]);
+    return `M${x},${y} L${end[0].toFixed(1)},${end[1].toFixed(1)}`;
+  });
+  const streamsMain = [brookD, westD, inletD], streamsSmall = [craneD, storkD], chanDs = [...streamsMain, ...streamsSmall];
+  areaFeature(el("g", {}, inPark), { id: "r-channels", swatch: "line", cat: "r_wet", title: "Beaver brook", label: "One connected water network", lx: 1250, ly: 985,
+    body: [["Canal water fills the head pond; the brook runs through every habitat, under Grove Road and out to Regent's Canal. Every side stream starts on the brook and ends in a pool."],
+           ["The site was always dry, so this wetland runs on borrowed canal water.", "th"]] },
+    g => {
+      const draw = (d, w) => {
+        el("path", { d, fill: "none", stroke: "#3f8fb3", "stroke-width": w + 6, "stroke-linecap": "round" }, g);
+        el("path", { d, fill: "none", stroke: "#86c8df", "stroke-width": w, "stroke-linecap": "round" }, g);
+        if (w > 8) el("path", { d, fill: "none", stroke: "#d6f1fb", "stroke-width": 2.5, "stroke-dasharray": "10 24" }, g);
+      };
+      streamsMain.forEach(d => draw(d, 12)); streamsSmall.forEach(d => draw(d, 7));
+      ditchDs.forEach(d => { el("path", { d, fill: "none", stroke: "#6f9a4a", "stroke-width": 15, "stroke-linecap": "round" }, g); draw(d, 5); });
+      const pools = ["crane", "stork"].map(k => POND[k]).concat(volePools).map(([x, y, rx, ry, r], i) => spline(blobPts(x, y, rx, ry, r, 30 + i, 0.22, 12)));
+      const fen = FEN_LOBES.map(([x, y, rx, ry, r], i) => spline(blobPts(x, y, rx, ry, r, 50 + i, 0.25, 12)));
+      [...pools, ...fen].forEach(d => el("path", { d, fill: "none", stroke: "#3f8fb3", "stroke-width": 6 }, g));
+      [...pools, ...fen].forEach(d => el("path", { d, fill: "#86c8df" }, g));
+      [[700, 1178, 14, 6, 20], [640, 1168, 12, 6, 10], [760, 1196, 10, 5, 0]].forEach(([x, y, rx, ry, r], i) =>
+        el("path", { d: spline(blobPts(x, y, rx, ry, r, 70 + i, 0.2, 9)), fill: "#8fbf9e", stroke: "#5f8a52", "stroke-width": 2 }, g)); // reed islands
+    });
+  areaFeature(el("g", {}, inPark), sp("r-ponds", "Beaver ponds and dams", "Built by the beavers", 1600, 700,
+    [["Three ponds held back by the beavers' own dams; the brook starts at the top one."],
+     ["Beaver dams slow floods and store water for dry spells.", "brazier"]]),
+    g => {
+      const bp = ["head", "mid", "low"].map((k, i) => { const [x, y, rx, ry, r] = POND[k]; return spline(blobPts(x, y, rx, ry, r, 40 + i, 0.22, 13)); });
+      bp.forEach(d => el("path", { d, fill: "#86c8df", stroke: "#3f8fb3", "stroke-width": 3.5 }, g));
+      [at(0.105), at(0.245)].forEach(([x, y]) => {
+        el("rect", { x: x - 20, y: y - 4, width: 40, height: 8, rx: 3, fill: "#7a4a24", transform: `rotate(62 ${x} ${y})` }, g);
+        for (let k = -14; k <= 14; k += 7) el("line", { x1: x + k, y1: y - 5, x2: x + k + 3, y2: y + 5, stroke: "#5c3f20", "stroke-width": 2, transform: `rotate(62 ${x} ${y})` }, g);
+      });
+    });
+
+  // Culverts: the brook carries on underground, never just stopping at a road or towpath
+  const tunG = el("g", {}, world);
+  areaFeature(tunG, { id: "r-culvert", swatch: "line", cat: "r_wet", title: "Culverts", label: "Brook runs underground", lx: 1027, ly: 1127,
+    body: [["The brook passes under roads and towpaths in culverts (dashed), with dry ledges for otters and voles."],
+           ["Culverts with dry ledges and guide fencing cut otter road deaths.", "cardiff"]] },
+    g => Object.values(TUN).forEach(([a, b]) => {
+      const d = `M${a[0]},${a[1]} L${b[0]},${b[1]}`;
+      el("path", { d, fill: "none", stroke: "#2c4a1b", "stroke-width": 14, "stroke-linecap": "round", opacity: .18 }, g);
+      el("path", { d, fill: "none", stroke: "#3f8fb3", "stroke-width": 7, "stroke-dasharray": "7 6" }, g);
+      [a, b].forEach(([x, y]) => { el("circle", { cx: x, cy: y, r: 9, fill: "#8a7a62", stroke: "#2c4a1b", "stroke-width": 2 }, g); el("circle", { cx: x, cy: y, r: 4.5, fill: "#1f3a44" }, g); });
+    }));
+
+  // Wildlife-proof boundary: the tree belt plus a fence on the outer edge, so animals can't reach the roads
+  areaFeature(el("g", {}, world), sp("r-fence", "Boundary fence", "Keeps animals off the roads", 1230, 705,
+    [["A buried, unclimbable mesh fence outside the tree belt keeps animals off the roads and steers them to the green bridge and culverts."],
+     ["Guide fencing is part of the standard fix for otter road deaths.", "cardiff"]], { swatch: "line" }),
+    g => ["east", "west"].forEach(k => {
+      const d = polyD(PARK[k]);
+      el("path", { d, fill: "none", stroke: "#5c3f20", "stroke-width": 2.5, "stroke-linejoin": "round" }, g);
+      el("path", { d, fill: "none", stroke: "#5c3f20", "stroke-width": 7, "stroke-dasharray": "2.5 16", "stroke-linecap": "round" }, g);
+    }));
+
+  /* ---- The one path (drawn above the clip so it can cross Grove Road) ---- */
+  const loopD = spline(R_LOOP, true, 0.4);
+  const loopEl = el("path", { d: loopD, fill: "none" }, defs);
+  const loopS = sample(loopEl, 4);
+  const gateStubs = GATES.map(g => {
+    const q = nearestOn(loopS, g[1], g[2]);
+    return q && Math.sqrt(q.d) > 6 ? `M${g[1]},${g[2]} L${q.x.toFixed(1)},${q.y.toFixed(1)}` : null;
+  }).filter(Boolean);
+  const pathG = el("g", { "pointer-events": "none" }, world);
+  drawPathSet(pathG, [...gateStubs, loopD]);
+
+  // Green bridge over Grove Road, joining the two halves for animals (people stay on the loop)
+  { const C = [1027, 1127], n = [0.949, -0.316], t = [0.316, 0.949];
+    const P = (u, v) => [C[0] + n[0] * u + t[0] * v, C[1] + n[1] * u + t[1] * v];
+    const outline = [P(-80, -46), P(-40, -32), P(0, -30), P(40, -32), P(80, -46), P(80, 46), P(40, 32), P(0, 30), P(-40, 32), P(-80, 46)];
+    const d = spline(outline, true, 0.25);
+    const bridgeG = el("g", {}, world);
+    areaFeature(bridgeG, sp("r-bridge", "Green bridge", "Wildlife crossing over Grove Road", C[0], C[1],
+      [["A planted wildlife-only bridge over Grove Road joining the two halves. No path crosses it."],
+       ["Green bridges stop species becoming isolated and cut traffic accidents.", "greenbr"]], { swatch: { fill: "url(#tallgrass)", stroke: "#8a7a62" } }),
+      g => {
+        el("path", { d, fill: "url(#tallgrass)", stroke: "#3f6f5c", "stroke-width": 7 }, g);
+        document.getElementById("rBeltMask").insertAdjacentHTML("beforeend", `<path d="${d}" fill="black"/>`);
+        [[-30, -6], [10, 8], [45, -4]].forEach(([u, v]) => { const [x, y] = P(u, v); el("rect", { x: x - 9, y: y - 3, width: 18, height: 6, rx: 3, fill: "#7a4a24", transform: `rotate(-18 ${x} ${y})` }, g); });
+      });
+  }
+
+  // Elevated sections: where the path crosses water, plus the stretch beside the crane marsh
+  const waterS = chanDs.flatMap(d => geomSamples(d, 4));
+  const L = loopEl.getTotalLength();
+  const centres = [];
+  loopS.forEach(([x, y, s]) => {
+    const w = nearestOn(waterS, x, y);
+    if (w && Math.sqrt(w.d) < 16 && !centres.some(c => Math.abs(c - s) < 150)) centres.push(s);
+  });
+  const craneQ = (() => { let best = null; loopS.forEach(([x, y, s]) => { const d = (x - 1575) ** 2 + (y - 470) ** 2; if (!best || d < best.d) best = { d, s }; }); return best.s; })();
+  const spans = [...centres.slice(0, 2).map(c => [c - 45, c + 45]), [craneQ - 110, craneQ + 110]];
+  const elevG = el("g", {}, world);
+  const segD = ([a, b]) => { const pts = []; for (let s = Math.max(0, a); s <= Math.min(L, b); s += 6) { const p = loopEl.getPointAtLength(s); pts.push(`${p.x.toFixed(1)},${p.y.toFixed(1)}`); } return "M" + pts.join("L"); };
+  const elevDs = spans.map(segD);
+  areaFeature(elevG, { id: "r-elevated", cat: "r_visit", title: "Elevated walkways", label: `${elevDs.length} raised sections`, lx: R_LOOP[0][0], ly: R_LOOP[0][1],
+    body: [["Raised sections where the path crosses water and passes the crane marsh, so it never splits a habitat."]] },
+    g => drawRaised(g, elevDs));
+  const routeG = el("g", {}, world);
+  routeFeature(routeG, { id: "r-loop", cat: "r_visit", title: "Perimeter path", label: "The only path",
+    body: d => [[`About ${d.m} m (${d.min} min). The only path: it keeps to the edge, so the interior belongs to wildlife.`]] }, loopD, "#b4532a");
+  // fix flyTo anchor for the loop and walkways
+  features.find(f => f.id === "r-loop").lx = 1500; features.find(f => f.id === "r-loop").ly = 700;
+  const ev = features.find(f => f.id === "r-elevated"); { const p = loopEl.getPointAtLength(craneQ); ev.lx = p.x; ev.ly = p.y; }
+
+  // The other two holts: small log piles drawn into the corridor, not hoverable
+  { const hg = el("g", { "pointer-events": "none" }, inPark);
+    [[1516, 1023, -34], [1809, 836, -28]].forEach(([x, y, r]) => {
+      const g = el("g", { transform: `translate(${x} ${y}) rotate(${r})` }, hg);
+      el("ellipse", { cx: 1, cy: 3, rx: 15, ry: 8, fill: "#2c4a1b", opacity: .3 }, g);
+      [[-11, 0, 22], [-9, -5, 18], [-6, -10, 12]].forEach(([lx, ly, w]) => el("rect", { x: lx, y: ly, width: w, height: 5, rx: 2.5, fill: "#7a4a24", stroke: "#4a2c14", "stroke-width": 1 }, g));
+      el("circle", { cx: 0, cy: 3, r: 2.6, fill: "#1f2a18" }, g);
+    }); }
+
+  /* ---- Points ---- */
+  const onLoop = (x, y) => { const q = nearestOn(loopS, x, y); return [q.x, q.y]; };
+  [["Beaver", 1590, 690, "beaver"], ["Common crane", 1545, 482, "crane"], ["White stork", 1835, 592, "stork"], ["Eurasian otter", 1400, 1110, "otter"], ["Water vole", 1295, 905, "vole"]].forEach(([name, x, y, sp], i) => {
+    const [px, py] = onLoop(x, y);
+    addMarker({ id: "r-base-" + i, group: "Baseline markers", cat: "r_visit", kind: "sp-" + sp, x: +px.toFixed(1), y: +py.toFixed(1),
+      title: `Baseline marker: ${name}`, label: "What London lost",
+      body: [[`A post facing the ${name.toLowerCase()} habitat, naming the species and when it disappeared.`],
+             ["Each generation takes the nature it grew up with as normal; the markers show what was lost.", "soga18b"]] });
+  });
+  [
+    { id: "r-lodge", cat: "r_species", kind: "blodge", x: 1618, y: 712, title: "Beaver lodge", label: "Inside the fence",
+      body: [["The beavers' lodge of sticks and mud, out of reach of the path."]] },
+    { id: "r-st-1", group: "Stork nest platforms", cat: "r_species", kind: "nest", x: 1770, y: 575, title: "Stork nest platforms", label: "Colony of poles",
+      body: [["Nest platforms on tall poles, grouped so arriving storks find a colony."], ["Storks nest in colonies for safety.", "stork"]] },
+    { id: "r-st-2", group: "Stork nest platforms", cat: "r_species", kind: "nest", x: 1830, y: 615, title: "Stork nest platforms", label: "Colony of poles",
+      body: [["Nest platforms on tall poles, grouped so arriving storks find a colony."], ["Storks nest in colonies for safety.", "stork"]] },
+    { id: "r-st-3", group: "Stork nest platforms", cat: "r_species", kind: "nest", x: 1770, y: 642, title: "Stork nest platforms", label: "Colony of poles",
+      body: [["Nest platforms on tall poles, grouped so arriving storks find a colony."], ["Storks nest in colonies for safety.", "stork"]] },
+    { id: "r-holt-3", cat: "r_species", kind: "den", x: 655, y: 1250, title: "Otter holts", label: "Log piles under scrub",
+      body: [["A log-and-earth holt on the Regent's Canal bank; two more sit along the Hertford Union Canal."], ["Artificial holts replace missing resting places.", "otter"]] },
+    { id: "r-mink", cat: "r_species", kind: "raft", x: volePools[0][0], y: volePools[0][1], title: "Mink raft", label: "Protects the water voles",
+      body: [["A raft that detects and traps American mink, which can wipe out vole colonies."], ["Mink control goes hand in hand with bank restoration.", "ptes"]] },
+    { id: "r-sluice", cat: "r_wet", kind: "sluice", x: 1662, y: 950, title: "Canal sluice", label: "Water in from the canal",
+      body: [["Controls canal water into the park; mesh stops beavers burrowing into the towpath."],
+             ["Beaver wetlands need managing to avoid conflicts with infrastructure.", "brazier"]] },
+    { id: "r-gateway", cat: "r_visit", kind: "gateway", x: 1040, y: 1003, title: "Rewilding gateway", label: "Royal Gate",
+      body: [["The one information point: what is being restored and why visitors stay on the edge."],
+             ["London's proposed 100-hectare rewilding zones leave out Victoria Park; that is the point of this speculation.", "gla"]] },
+  ].forEach(p => addMarker(p));
+  openGates();
+  features.filter(f => f.lx != null && f.node.classList.contains("area")).forEach(f => addLabel(f));
+}
+
+/* ================= Forager Park ================= */
+function drawForager() {
+  const inPark = el("g", { "clip-path": "url(#parkClip)" }, world);
+  edgeBelt(inPark, "fruittrees", { id: "g-forest", cat: "g_trees", title: "Food forest edge", label: "Whole perimeter", lx: 1470, ly: 470,
+    body: [["The tree belt becomes a food forest: fruit and nut trees over berries and herbs, free to pick."],
+           ["30 of 70 species reviewed suit urban food forests, yet few city tree plans aim at food.", "clark"]] });
+
+  const growG = el("g", { mask: innerMask() }, inPark);
+  // Hay meadow in the open centre
+  areaFeature(growG, { id: "g-hay", cat: "g_grow", title: "Hay meadow", label: "Cut once a year", lx: 1590, ly: 690,
+    body: [["The open centre stays a hay meadow: the commons, harvest-festival field and play space."]] },
+    g => el("path", { d: spline(blobPts(1590, 690, 175, 112, -28, 7, 0.08, 12)), fill: "url(#hay)", stroke: "#b9a54a", "stroke-width": 3 }, g));
+  // Raised-bed market garden blocks
+  const blocks = [
+    { id: "g-beds-tail", x: 1262, y: 985, w: 100, h: 180, rot: 38, title: "Market garden · South", label: "Raised beds",
+      body: [["Raised beds of clean soil for leafy greens and salad."],
+             ["City soils can hold lead, so leafy crops go in raised beds.", "entwistle"]] },
+    { id: "g-beds-canal", x: 1478, y: 914, w: 210, h: 60, rot: -33, title: "Market garden · Canal", label: "Vegetable rows",
+      body: [["Vegetable rows along the canal, watered by a small pump."],
+             ["This land was brick fields and market gardens before 1872; growing food returns to an older use.", "he"]] },
+    { id: "g-beds-north", x: 1665, y: 478, w: 160, h: 56, rot: -36, title: "Market garden · North", label: "Shared beds",
+      body: [["Beds worked in common: everyone who works a shift shares the harvest."],
+             ["Growing on 10% of Sheffield's green space could give 15% of residents their five a day.", "edmondson"]] },
+    { id: "g-beds-west", x: 498, y: 1104, w: 92, h: 40, rot: 20, title: "Market garden · West", label: "Learning beds",
+      body: [["Beds run with local schools and the gardening course, beside the kitchen."],
+             ["Gardening is linked to lower stress and higher life satisfaction.", "soga17"]] },
+  ];
+  blocks.forEach(b => areaFeature(growG, { ...b, group: "Market garden", cat: "g_grow", lx: b.x, ly: b.y }, g => {
+    el("path", { d: polyD(rectPts(b.x, b.y, b.w + 14, b.h + 14, b.rot)), fill: "#c9a77c", stroke: "#8f6f50", "stroke-width": 3, "stroke-linejoin": "round" }, g);
+    const crops = ["#4f9a3c", "#6fb34a", "#8a3f6a", "#3f7a33", "#e8402f", "#9cc15a", "#d9a12a"];
+    const bw = 16, gap = 8, rows = Math.floor(b.w / (bw + gap));
+    for (let r = 0; r < rows; r++) {
+      const ox = -b.w / 2 + bw / 2 + r * (bw + gap) + ((b.w - rows * (bw + gap) + gap) / 2);
+      const a = b.rot * Math.PI / 180, cx = b.x + ox * Math.cos(a), cy = b.y + ox * Math.sin(a);
+      el("path", { d: polyD(rectPts(cx, cy, bw, b.h - 6, b.rot)), fill: crops[(r * 3 + b.x) % crops.length], stroke: "#6b4a2b", "stroke-width": 2 }, g);
+    }
+  }));
+  // Orchard on the old West Lake
+  areaFeature(growG, { id: "g-orchard", cat: "g_trees", title: "Lake orchard", label: "On the old West Lake", lx: 880, ly: 1205,
+    body: [["The drained West Lake becomes an orchard rather than vegetables, since old silt can hold metals."],
+           ["Tree fruit suits soils with raised lead.", "entwistle"]] },
+    g => {
+      const pts = blobPts(880, 1205, 66, 54, 14, 3, 0.08, 12);
+      el("path", { d: spline(pts), fill: "#b8d77e", stroke: "#7fae3d", "stroke-width": 3 }, g);
+      for (const i of [-1.5, -0.5, 0.5, 1.5]) for (let j = -1; j <= 1; j++) {
+        const a = 14 * Math.PI / 180, ox = i * 30, oy = j * 30;
+        const x = 880 + ox * Math.cos(a) - oy * Math.sin(a), y = 1205 + ox * Math.sin(a) + oy * Math.cos(a);
+        if (Math.abs(i) === 1.5 && Math.abs(j) === 1) continue;
+        el("circle", { cx: x + 2, cy: y + 3, r: 12, fill: "#3e7a35", opacity: .4 }, g);
+        el("circle", { cx: x, cy: y, r: 12, fill: "#5aa04a" }, g);
+        [[-4, -3, "#e8402f"], [4, 2, "#e8402f"], [0, 5, "#f7a81b"]].forEach(([dx, dy, c]) => el("circle", { cx: x + dx, cy: y + dy, r: 2.4, fill: c }, g));
+      }
+    });
+
+  treeClumps(el("g", { "pointer-events": "none" }, inPark), [[1390, 760, 2], [1250, 830, 3], [1800, 640, 2], [1760, 560, 2], [1400, 560, 2], [1150, 1080, 2], [400, 1110, 2], [900, 1270, 2]], "#5aa04a", "#e8a33a");
+  // Paths: harvest walk + spurs + straight work paths
+  const loop = spline([[1088, 1010], [1170, 881], [1274, 746], [1391, 593], [1502, 469], [1611, 373], [1716, 387], [1829, 473], [1898, 614], [1889, 705], [1793, 787], [1638, 901], [1484, 992], [1347, 1078], [1233, 1133], [1147, 1151], [1097, 1088]]);
+  const west = spline([[465,1058], [409,1076], [424,1112], [480,1132], [536,1155], [590,1182], [646,1204], [702,1225], [757,1248], [813,1270], [869,1289], [929,1287], [984,1265], [980,1209], [960,1153], [939,1096], [894,1097], [838,1118], [779,1131], [720,1140], [660,1137], [603,1118], [551,1089], [498,1061]]);
+  const loopS = geomSamples(loop), westS = geomSamples(west);
+  const work = [spline([[1330, 555], [1450, 640], [1590, 690], [1730, 740], [1830, 790]], false), spline([[1590, 690], [1612, 800], [1638, 901]], false)];
+  const pathG = el("g", { "pointer-events": "none" }, inPark);
+  drawPathSet(pathG, [...spurPaths(loopS, westS), ...work, loop, west]);
+  const routeG = el("g", {}, inPark);
+  routeFeature(routeG, { id: "g-harvest", cat: "g_routes", title: "Harvest walk", label: "Through the food forest",
+    body: d => [[`About ${d.m} m (${d.min} min) inside the food forest, past every market garden.`]] }, loop, "#b4532a");
+  routeFeature(routeG, { id: "g-orchardwalk", cat: "g_routes", title: "Orchard circuit", label: "West half",
+    body: d => [[`About ${d.m} m (${d.min} min) round the orchard and kitchen.`]] }, west, "#8a6a12");
+
+  [
+    { id: "g-kitchen", cat: "g_people", kind: "kitchen", x: 760, y: 1190, title: "Community kitchen", label: "In the old Pavilion Café",
+      body: [["The café becomes a shared kitchen: growers cook, and surplus feeds a weekly park meal."],
+             ["Urban land could supply a large share of local fruit and veg.", "edmondson"]] },
+    { id: "g-council", cat: "g_people", kind: "council", x: 1040, y: 1003, title: "Growers' council", label: "Royal Gate",
+      body: [["Growers meet monthly to set shifts, share the harvest and deal with free-riders."],
+             ["Commons last when users make, monitor and enforce their own rules.", "ostrom"]] },
+    { id: "g-yard", cat: "g_people", kind: "yard", x: 1760, y: 840, title: "Tool and compost yard", label: "Shared tools",
+      body: [["Shared tools, a seed library and compost bays turning park waste back into soil."]] },
+  ].forEach(p => addMarker(p));
+  openGates();
+  [...features.filter(f => f.lx != null && f.node.classList.contains("area"))].forEach(f => addLabel(f));
+}
+
+const DRAW = { "well-being": () => drawWellbeing(), "fourth-nature": drawFourth, "restoration": drawRestoration, "forager": drawForager };
+
+buildDefs(); scenarioDefs();
+setLayer(fromHash(), true);
+fit();
+
+document.querySelectorAll("a.nat[data-scenario]").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault();
+  const L = LAYERS.find(l => l.id === a.dataset.scenario);
+  if (L) setLayer(L);
+  document.getElementById("app").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}));
+
+</script>
+</body>
+</html>
